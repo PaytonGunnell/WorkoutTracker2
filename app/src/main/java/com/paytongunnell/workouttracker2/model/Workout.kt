@@ -6,6 +6,8 @@ import kotlinx.serialization.Serializable
 import java.util.Random
 import java.util.UUID
 
+// TODO: add pending download and pending deletion for firebase syncing
+
 @Serializable
 @Entity("workout_table")
 data class Workout(

@@ -4,6 +4,12 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import kotlinx.serialization.Serializable
 
+/*
+    TODO: add pending download and pending deletion for firebase syncing.
+    Default exercises will not be synced with firebase.
+ */
+// Chart: for each workout that contains a given exercise take the best performing set for that exercise and record that set on the chart
+
 @Serializable
 @Entity("exercise_table")
 data class Exercise(
@@ -21,7 +27,9 @@ data class Exercise(
     val prevReps: Int? = null,
     val newPrevLbs: Double? = null,
     val newPrevReps: Int? = null,
-    val history: List<String> = emptyList() // id WorkoutSet
+    val pendingDeletion: Boolean = false,
+    val pendingSync: Boolean = false
+//    val history: List<String> = emptyList() // id WorkoutSet
 //    val history: List<ExerciseSet> = emptyList()
 //    val prevWeight: Double,
 //    val prevReps: Double,
