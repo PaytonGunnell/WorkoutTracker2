@@ -18,27 +18,4 @@ abstract class ExerciseDatabase: RoomDatabase() {
 
     abstract val exerciseDao: ExerciseDao
     abstract val workoutDao: WorkoutDao
-
-    companion object {
-        @Volatile
-        private var INSTANCE: ExerciseDatabase? = null
-
-        fun getInstance(context: Context): ExerciseDatabase {
-            synchronized(this) {
-                var instance = INSTANCE
-                if (instance == null) {
-                    instance = Room.databaseBuilder(
-                        context.applicationContext,
-                        ExerciseDatabase::class.java,
-                        "wger_database"
-                    )
-                        .fallbackToDestructiveMigration()
-                        .build()
-
-                    INSTANCE = instance
-                }
-                return instance
-            }
-        }
-    }
 }

@@ -13,12 +13,16 @@ import com.paytongunnell.workouttracker2.network.ExerciseDBService
 import com.paytongunnell.workouttracker2.network.FirebaseAuthClient
 import com.paytongunnell.workouttracker2.network.WorkoutTrackerServerService
 import com.paytongunnell.workouttracker2.repository.WorkoutTrackerRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
-class LoadingTestViewModel(
-    application: Application
+@HiltViewModel
+class LoadingTestViewModel @Inject constructor(
+    application: Application,
+    repository: WorkoutTrackerRepository
 ): AndroidViewModel(application) {
 
-    val repository = WorkoutTrackerRepository(ExerciseDBService, FirebaseAuthClient, ExerciseDatabase.getInstance(application))
+//    val repository = WorkoutTrackerRepository(ExerciseDBService, FirebaseAuthClient, ExerciseDatabase.getInstance(application))
 
     private var _user by mutableStateOf<FirebaseUser?>(null)
     val user: FirebaseUser?

@@ -3,6 +3,7 @@ package com.paytongunnell.workouttracker2.screens.authtest
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.paytongunnell.workouttracker2.screens.authtest.destinations.AuthTestScreenDestination
 import com.paytongunnell.workouttracker2.screens.authtest.destinations.HomeScreenTestDestination
@@ -16,7 +17,7 @@ import kotlinx.coroutines.CoroutineScope
 @Composable
 fun LoadingTestScreen(
     navigator: DestinationsNavigator,
-    viewModel: LoadingTestViewModel = viewModel()
+    viewModel: LoadingTestViewModel = hiltViewModel()
 ) {
 
     LaunchedEffect(Unit) {

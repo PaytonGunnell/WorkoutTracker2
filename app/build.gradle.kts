@@ -5,8 +5,8 @@ plugins {
     alias(libs.plugins.serialization)
     alias(libs.plugins.ksp)
     alias(libs.plugins.kapt)
-    alias(libs.plugins.hilt)
     alias(libs.plugins.google.services)
+    alias(libs.plugins.hilt)
 }
 
 android {
@@ -74,6 +74,9 @@ dependencies {
     implementation(libs.material3)
     implementation(libs.compose.destinations)
     ksp(libs.compose.destinations.compiler)
+
+    // Background Work
+    implementation(libs.work)
 
     // Networking
     implementation(libs.ktor.core)

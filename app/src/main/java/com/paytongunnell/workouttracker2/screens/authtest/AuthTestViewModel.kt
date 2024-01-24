@@ -13,6 +13,7 @@ import com.paytongunnell.workouttracker2.network.ExerciseDBService
 import com.paytongunnell.workouttracker2.network.FirebaseAuthClient
 import com.paytongunnell.workouttracker2.repository.WorkoutTrackerRepository
 import com.paytongunnell.workouttracker2.utils.Response
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -20,12 +21,15 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import javax.inject.Inject
 
-class AuthTestViewModel(
-    application: Application
+@HiltViewModel
+class AuthTestViewModel @Inject constructor(
+    application: Application,
+    private val repository: WorkoutTrackerRepository
 ): AndroidViewModel(application) {
 
-    private val repository = WorkoutTrackerRepository(ExerciseDBService, FirebaseAuthClient, ExerciseDatabase.getInstance(application))
+//    private val repository = WorkoutTrackerRepository(ExerciseDBService, FirebaseAuthClient, ExerciseDatabase.getInstance(application))
 
     private var _user = MutableStateFlow<Response<FirebaseUser>?>(null)
     val user: StateFlow<Response<FirebaseUser>?> = _user.asStateFlow()
