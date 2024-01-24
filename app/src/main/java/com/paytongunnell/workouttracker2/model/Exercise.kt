@@ -6,7 +6,8 @@ import kotlinx.serialization.Serializable
 
 /*
     TODO: add pending download and pending deletion for firebase syncing.
-    Default exercises will not be synced with firebase.
+        Default exercises will not be synced with firebase.
+
  */
 // Chart: for each workout that contains a given exercise take the best performing set for that exercise and record that set on the chart
 
@@ -15,6 +16,8 @@ import kotlinx.serialization.Serializable
 data class Exercise(
     @PrimaryKey
     val id: String,
+    val userId: String? = null, // used to separate the custom made exercises by the user that created them
+    val customMade: Boolean = false,
     val name: String,
     val gifUrl: String? = null,
     val bodyPart: BodyPart? = null,

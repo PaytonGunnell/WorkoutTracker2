@@ -2,15 +2,19 @@ package com.paytongunnell.workouttracker2.repository
 
 import android.content.Context
 import android.util.Log
+import com.google.firebase.auth.FirebaseUser
 import com.paytongunnell.workouttracker2.database.ExerciseDatabase
 import com.paytongunnell.workouttracker2.model.Exercise
 import com.paytongunnell.workouttracker2.model.Workout
 import com.paytongunnell.workouttracker2.model.WorkoutSet
 import com.paytongunnell.workouttracker2.model.testWorkout
 import com.paytongunnell.workouttracker2.network.ExerciseDBService
+import com.paytongunnell.workouttracker2.network.FirebaseAuthClient
 import com.paytongunnell.workouttracker2.utils.Response
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -20,8 +24,41 @@ import java.net.URL
 
 class WorkoutTrackerRepository(
     private val networkService: ExerciseDBService,
-    private val database: ExerciseDatabase
+    private val authClient: FirebaseAuthClient,
+    private val database: ExerciseDatabase,
+    private val dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) {
+
+    fun getFirebaseUser(): FirebaseUser? {
+        return authClient.getCurrentUser()
+    }
+
+    suspend fun createAccount(email: String, password: String): Flow<Response<FirebaseUser>> = flow {
+        emit(Response.Loading())
+        try {
+            val user = authClient.createAccount(email, password)
+            emit(Response.Success(user))
+        } catch(e: Exception) {
+            emit(Response.Error(e.message))
+        }
+    }
+
+    suspend fun signIn(email: String, password: String): Flow<Response<FirebaseUser>> = flow {
+        emit(Response.Loading())
+
+        try {
+            val user = authClient.signIn(email, password)
+            emit(Response.Success(user))
+        } catch(e: Exception) {
+            emit(Response.Error(e.message))
+        }
+    }
+
+    suspend fun signOut() {
+        return withContext(dispatcher) {
+            authClient.signOut()
+        }
+    }
 
     fun getAllExercises(context: Context): Flow<Response<List<Exercise>>> = flow {
         emit(Response.Loading())

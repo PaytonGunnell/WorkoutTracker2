@@ -8,11 +8,18 @@ import java.util.UUID
 
 // TODO: add pending download and pending deletion for firebase syncing
 
+/*
+    TODO: Data Synchronization
+        If data is made without being logged in, and the user logs the user will be given 2 options
+        transfer old data (this will add the data to any data that is already on your profile), or delete old data.
+ */
+
 @Serializable
 @Entity("workout_table")
 data class Workout(
     @PrimaryKey
     val id: String = UUID.randomUUID().toString(),
+    val userId: String? = null, // Used to separate the data by users if no user is logged in.
     val name: String = "Workout",
     var note: String = "",
     var startTime: Long,
