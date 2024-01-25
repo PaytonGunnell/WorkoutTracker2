@@ -10,8 +10,9 @@ import java.util.UUID
 
 /*
     TODO: Data Synchronization
-        If data is made without being logged in, and the user logs in the user will be given 2 options
-        transfer old data (this will add the data to any data that is already on your profile), or delete old data.
+        If data is made without being logged in, and the user logs in the user will be given 3 options
+        transfer old data (this will add the data to any data that is already on your profile), or delete old data,
+        keep old data but don't transfer it.
  */
 
 @Serializable

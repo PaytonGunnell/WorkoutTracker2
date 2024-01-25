@@ -1,4 +1,4 @@
-package com.paytongunnell.workouttracker2.backgroundwork
+package com.paytongunnell.workouttracker2.datasync
 
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -7,19 +7,20 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
 import android.util.Log
-import androidx.core.content.ContextCompat
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
-import androidx.work.Worker
+import com.paytongunnell.workouttracker2.repository.WorkoutTrackerRepository
+import javax.inject.Inject
 
-class ConnectivityReceiver : BroadcastReceiver() {
+class ConnectivityReceiver(): BroadcastReceiver() {
+
+    @Inject
+    lateinit var repository: WorkoutTrackerRepository
+
     override fun onReceive(context: Context, intent: Intent) {
         Log.d("connreceiver", "onReceive:called")
         if (isNetworkConnected(context)) {
             Log.d("connreceiver", "onReceive:networkConnectedTrue")
 
-//            val syncWorkRequest = OneTimeWorkRequestBuilder<Worker>().build()
-//            WorkManager.getInstance(context).enqueue(syncWorkRequest)
+            // check repository for data marked for syncing and sync it
         }
     }
 

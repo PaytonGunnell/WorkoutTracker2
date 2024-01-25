@@ -1,11 +1,68 @@
 package com.paytongunnell.workouttracker2.network
 
+import android.graphics.Bitmap
+import android.util.Log
+import com.google.firebase.database.getValue
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.ktx.storage
+import com.paytongunnell.workouttracker2.model.Exercise
+import com.paytongunnell.workouttracker2.model.Workout
+import kotlinx.coroutines.suspendCancellableCoroutine
+import java.io.ByteArrayOutputStream
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 
 object WorkoutTrackerServerService {
 
     private val database = Firebase.database.reference
+    private val storage = Firebase.storage.reference
 
+    // Realtime Database
+    // Add
+    suspend fun addExercise(uId: String, exercise: Exercise) {
+        database.child("users").child(uId).child("exercises").child(exercise.id).setValue(exercise)
+    }
+    suspend fun addWorkout(uId: String, workout: Workout) {
+        database.child("users").child(uId).child("workouts").child(workout.id).setValue(workout)
+    }
 
+    // Get
+    suspend fun getExercise(uId: String, exerciseId: String): Exercise = suspendCancellableCoroutine { continuation ->
+        try {
+            database.child("users").child(uId).child("exercises").child(exerciseId)
+                .get()
+                .addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        task.result?.let { dataSnapshot ->
+                            val data = dataSnapshot.getValue<Exercise>()
+                            data?.let {
+                                continuation.resume(it)
+                            }
+                        }
+                    } else {
+                        task.exception?.let { continuation.resumeWithException(it) }
+                    }
+                }
+        } catch(e: Exception) {
+            continuation.resumeWithException(e)
+        }
+    }
+
+    // Cloud Storage
+    fun saveImage(uId: String, path: String, bitmap: Bitmap) {
+        val baos = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 50, baos)
+        val data = baos.toByteArray()
+
+        var uploadTask = storage.child(uId).child("profile").putBytes(data)
+        uploadTask.addOnFailureListener {
+            Log.d("saveImage", "fail")
+        }.addOnSuccessListener {
+            Log.d("saveImage", "success: images/$path")
+        }
+    }
+    suspend fun getProfileImage(uId: String) {
+
+    }
 }

@@ -15,12 +15,12 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 @Composable
 fun HomeScreenTest(
     navigator: DestinationsNavigator,
-    userId: String,
+    userId: String?,
     viewModel: HomeScreenTestViewModel = hiltViewModel()
 ) {
 
     Column {
-        Text(userId)
+        Text(userId ?: "null uid")
         Button(onClick = {
             viewModel.signOut()
             navigator.navigate(AuthTestScreenDestination)

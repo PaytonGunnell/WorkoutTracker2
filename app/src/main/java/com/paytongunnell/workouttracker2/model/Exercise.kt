@@ -29,9 +29,7 @@ data class Exercise(
     val prevLbs: Double? = null,
     val prevReps: Int? = null,
     val newPrevLbs: Double? = null,
-    val newPrevReps: Int? = null,
-    val pendingDeletion: Boolean = false,
-    val pendingSync: Boolean = false
+    val newPrevReps: Int? = null
 //    val history: List<String> = emptyList() // id WorkoutSet
 //    val history: List<ExerciseSet> = emptyList()
 //    val prevWeight: Double,

@@ -1,6 +1,7 @@
 package com.paytongunnell.workouttracker2.screens.authtest
 
 import android.app.Application
+import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -29,10 +30,10 @@ class AuthTestViewModel @Inject constructor(
     private val repository: WorkoutTrackerRepository
 ): AndroidViewModel(application) {
 
-//    private val repository = WorkoutTrackerRepository(ExerciseDBService, FirebaseAuthClient, ExerciseDatabase.getInstance(application))
+    private var _user = MutableStateFlow<Response<FirebaseUser?>?>(null)
+    val user: StateFlow<Response<FirebaseUser?>?> = _user.asStateFlow()
 
-    private var _user = MutableStateFlow<Response<FirebaseUser>?>(null)
-    val user: StateFlow<Response<FirebaseUser>?> = _user.asStateFlow()
+    private val eventFlagsSharedPreferences = application.getSharedPreferences("Event_Flags", Context.MODE_PRIVATE)
 
 //    private var _user by mutableStateOf<FirebaseUser?>(null)
 //    val user: FirebaseUser?
@@ -47,6 +48,11 @@ class AuthTestViewModel @Inject constructor(
                             _user.value = it
                         }
                         is Response.Success -> {
+//                            val usersThatHaveLoggedIn = eventFlagsSharedPreferences.getStringSet("userHasLoggedIn", emptySet())
+//                            val editor = eventFlagsSharedPreferences.edit()
+//                            editor.putStringSet("userHasLoggedIn", ((usersThatHaveLoggedIn ?: emptySet()) + (it.data?.uid)))
+//                            editor.apply()
+
                             _user.value = it
                         }
                         is Response.Error -> {

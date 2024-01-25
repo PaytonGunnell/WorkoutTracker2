@@ -1,7 +1,10 @@
 package com.paytongunnell.workouttracker2.repository
 
+import android.app.Application
 import android.content.Context
+import android.net.ConnectivityManager
 import android.util.Log
+import androidx.core.content.getSystemService
 import com.google.firebase.auth.FirebaseUser
 import com.paytongunnell.workouttracker2.database.ExerciseDatabase
 import com.paytongunnell.workouttracker2.model.Exercise
@@ -10,7 +13,9 @@ import com.paytongunnell.workouttracker2.model.WorkoutSet
 import com.paytongunnell.workouttracker2.model.testWorkout
 import com.paytongunnell.workouttracker2.network.ExerciseDBService
 import com.paytongunnell.workouttracker2.network.FirebaseAuthClient
+import com.paytongunnell.workouttracker2.network.WorkoutTrackerServerService
 import com.paytongunnell.workouttracker2.utils.Response
+import com.paytongunnell.workouttracker2.utils.isNetworkConnected
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -23,34 +28,53 @@ import java.io.InputStream
 import java.net.URL
 
 class WorkoutTrackerRepository(
+    private val application: Application,
     private val networkService: ExerciseDBService,
     private val authClient: FirebaseAuthClient,
+    private val workoutTrackerServerService: WorkoutTrackerServerService,
     private val database: ExerciseDatabase,
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) {
+
+    // Stores the id's of all exercises or workouts deleted/created while offline so that when the app is back online the
+    // firebase data will be synced with the local data
+    private val pendingDeletion = application.getSharedPreferences("Pending_Deletion", Context.MODE_PRIVATE)
+    private val pendingUpload = application.getSharedPreferences("Pending_Upload", Context.MODE_PRIVATE)
+
+    fun addPendingUpload(uId: String?, key: String, value: String) {
+        val editor = pendingUpload.edit()
+        editor.putString("$uId:$key", value)
+        editor.apply()
+    }
+
+    fun addPendingDeletion(uId: String?, key: String, value: String) {
+        val editor = pendingDeletion.edit()
+        editor.putString("$uId:$key", value)
+        editor.apply()
+    }
 
     fun getFirebaseUser(): FirebaseUser? {
         return authClient.getCurrentUser()
     }
 
-    suspend fun createAccount(email: String, password: String): Flow<Response<FirebaseUser>> = flow {
+    suspend fun createAccount(email: String, password: String): Flow<Response<FirebaseUser?>> = flow {
         emit(Response.Loading())
         try {
             val user = authClient.createAccount(email, password)
             emit(Response.Success(user))
         } catch(e: Exception) {
-            emit(Response.Error(e.message))
+            emit(Response.Error(e.localizedMessage))
         }
     }
 
-    suspend fun signIn(email: String, password: String): Flow<Response<FirebaseUser>> = flow {
+    suspend fun signIn(email: String, password: String): Flow<Response<FirebaseUser?>> = flow {
         emit(Response.Loading())
 
         try {
             val user = authClient.signIn(email, password)
             emit(Response.Success(user))
         } catch(e: Exception) {
-            emit(Response.Error(e.message))
+            emit(Response.Error(e.localizedMessage))
         }
     }
 
@@ -117,9 +141,20 @@ class WorkoutTrackerRepository(
         }
     }
 
-    suspend fun saveNewExercise(exercise: Exercise) {
+    suspend fun saveNewExercise(uId: String?, exercise: Exercise) {
         withContext(Dispatchers.IO) {
             database.exerciseDao.upsert(exercise)
+            uId?.let {
+                if (isNetworkConnected(application)) {
+                    try {
+                        workoutTrackerServerService.addExercise(uId, exercise)
+                    } catch (e: Exception) {
+                        addPendingUpload(uId, exercise.id, "exercise")
+                    }
+                } else {
+                    addPendingUpload(uId, exercise.id, "exercise")
+                }
+            }
         }
     }
 

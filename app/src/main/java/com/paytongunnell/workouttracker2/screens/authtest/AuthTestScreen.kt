@@ -28,22 +28,15 @@ fun AuthTestScreen(
 
     val user by viewModel.user.collectAsStateWithLifecycle()
 
-//    LaunchedEffect(viewModel.user) {
-//        viewModel.user?.let {
-//            navigator.navigate(HomeScreenTestDestination(it.uid))
-//        }
-//    }
-
     when (val userState = user) {
         is Response.Loading -> {
             CircularProgressIndicator()
         }
         is Response.Success -> {
             run {
-                navigator.navigate(HomeScreenTestDestination(userState.data.uid))
+                navigator.navigate(HomeScreenTestDestination(userState.data?.uid))
             }
         }
-
         else -> {
             Column {
                 var email by remember { mutableStateOf("") }
@@ -62,6 +55,10 @@ fun AuthTestScreen(
 
                 Button(onClick = { viewModel.signIn(email, password) }) {
                     Text("Log In")
+                }
+
+                Button(onClick = { /*TODO*/ }) {
+                    Text("Continue without an account")
                 }
 
                 if (userState is Response.Error) {

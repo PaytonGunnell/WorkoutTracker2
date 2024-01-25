@@ -40,20 +40,20 @@ object FirebaseAuthClient {
                 if (task.isSuccessful) {
                     Log.d("fbauth", "createUserWithEamil:success")
                     auth.signInWithEmailAndPassword(email, password)
-                        .addOnCompleteListener { task ->
-                            if (task.isSuccessful) {
+                        .addOnCompleteListener { task2 ->
+                            if (task2.isSuccessful) {
                                 Log.d("fbauth", "signIn:success")
                                 auth.currentUser?.let { user ->
                                     continuation.resume(user)
                                 }
                             } else {
                                 Log.d("fbauth", "signIn:failure")
-                                continuation.cancel(IllegalArgumentException("Authentication Failed"))
+                                continuation.cancel(task2.exception)
                             }
                         }
                 } else {
                     Log.d("fbauth", "createUserWithEamil:failure")
-                    continuation.cancel(IllegalArgumentException("Invalid Email or Password"))
+                    continuation.cancel(task.exception)
                 }
             }
     }
@@ -68,7 +68,7 @@ object FirebaseAuthClient {
                     }
                 } else {
                     Log.d("fbauth", "signIn:failure")
-                    continuation.cancel(IllegalArgumentException("Authentication Failed"))
+                    continuation.cancel(task.exception)
                 }
             }
     }
