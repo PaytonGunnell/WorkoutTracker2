@@ -9,12 +9,22 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkRequest
 import com.paytongunnell.workouttracker2.database.ExerciseDatabase
+import com.paytongunnell.workouttracker2.model.Exercise
+import com.paytongunnell.workouttracker2.model.ExerciseBlock
+import com.paytongunnell.workouttracker2.model.SetType
+import com.paytongunnell.workouttracker2.model.Workout
+import com.paytongunnell.workouttracker2.model.WorkoutSet
 import com.paytongunnell.workouttracker2.network.ExerciseDBService
 import com.paytongunnell.workouttracker2.network.FirebaseAuthClient
 import com.paytongunnell.workouttracker2.repository.WorkoutTrackerRepository
+import com.paytongunnell.workouttracker2.utils.Response
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
@@ -25,6 +35,106 @@ class HomeScreenTestViewModel @Inject constructor(
 
     val user = repository.getFirebaseUser()
 
+    private var _exercises = MutableStateFlow<Response<List<Exercise>>?>(null)
+    val exercises = _exercises.asStateFlow()
+
+    private var _localExercises = MutableStateFlow<Response<List<Exercise>>?>(null)
+    val localExercises = _exercises.asStateFlow()
+
+    private var _workouts = MutableStateFlow<Response<List<Workout>>?>(null)
+    val workouts = _workouts.asStateFlow()
+
+
+    init {
+        user?.let {
+            viewModelScope.launch {
+                repository.syncLocalAndFirebaseDataIfFirstTimeSigningIn(it.uid)
+                getExercisesFromFirebase()
+                getLocalExercises()
+//            repository.getFirebaseData(it.uid)
+            }
+        }
+    }
+
+
+    // TEMP
+    fun getLocalExercises() {
+        user?.let { fbUser ->
+            viewModelScope.launch {
+                repository.getAllExercises()
+                    .collect {
+                        _localExercises.value = it
+                    }
+            }
+        }
+    }
+
+    fun getWorkoutsFromFirebase() {
+        user?.let { fbUser ->
+            viewModelScope.launch {
+                repository.getAllFirebaseWorkouts(fbUser.uid)
+                    .collect {
+                        _workouts.value = it
+                    }
+            }
+        }
+    }
+
+    fun createNewFirebsaeWorkout() {
+        user?.let { fbUser ->
+            val testWorkout = Workout(
+                userId = fbUser.uid,
+                name = "Test Workout",
+                startTime = 1L,
+                endTime = 2L,
+                exercises = listOf(
+                    ExerciseBlock(
+                        exerciseId = "2",
+                        exerciseName = "Test Workout Exercise",
+                        sets = listOf(
+                            WorkoutSet(
+                                id = 1,
+                                exerciseId = "2",
+                                setType = SetType.FAILURE,
+                                previousLbs = 2.0,
+                                previousReps = 3
+                            )
+                        ),
+                        isSuperSet = false
+                    )
+                )
+            )
+
+            viewModelScope.launch {
+                repository.createFirebaseWorkout(fbUser.uid, testWorkout)
+            }
+        }
+    }
+
+    fun getExercisesFromFirebase() {
+        user?.let { fbUser ->
+            viewModelScope.launch {
+                repository.getAllFirebaseExercises(fbUser.uid)
+                    .collect {
+                        _exercises.value = it
+                    }
+            }
+        }
+    }
+
+    fun createNewFirebaseExercise() {
+        user?.let { fbUser ->
+            val testExercise = Exercise(
+                id = UUID.randomUUID().toString(),
+                userId = fbUser.uid,
+                name = "Test Exercise"
+            )
+            viewModelScope.launch {
+                repository.createFirebaseExercise(fbUser.uid, testExercise)
+            }
+        }
+    }
+    // TEMP
 
     fun signOut() {
         viewModelScope.launch {

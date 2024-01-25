@@ -33,32 +33,15 @@ class AuthTestViewModel @Inject constructor(
     private var _user = MutableStateFlow<Response<FirebaseUser?>?>(null)
     val user: StateFlow<Response<FirebaseUser?>?> = _user.asStateFlow()
 
-    private val eventFlagsSharedPreferences = application.getSharedPreferences("Event_Flags", Context.MODE_PRIVATE)
-
-//    private var _user by mutableStateOf<FirebaseUser?>(null)
-//    val user: FirebaseUser?
-//        get() = _user
+    fun continueWithoutAccount() {
+        _user.value = Response.Success(null)
+    }
 
     fun createAccount(email: String, password: String) {
         viewModelScope.launch {
             repository.createAccount(email, password)
                 .collect {
-                    when (it) {
-                        is Response.Loading -> {
-                            _user.value = it
-                        }
-                        is Response.Success -> {
-//                            val usersThatHaveLoggedIn = eventFlagsSharedPreferences.getStringSet("userHasLoggedIn", emptySet())
-//                            val editor = eventFlagsSharedPreferences.edit()
-//                            editor.putStringSet("userHasLoggedIn", ((usersThatHaveLoggedIn ?: emptySet()) + (it.data?.uid)))
-//                            editor.apply()
-
-                            _user.value = it
-                        }
-                        is Response.Error -> {
-                            _user.value = it
-                        }
-                    }
+                    _user.value = it
                 }
         }
         Log.d("authtest", "user: ${_user}")

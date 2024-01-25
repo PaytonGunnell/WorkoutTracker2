@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.Context
 import android.net.ConnectivityManager
 import android.util.Log
+import android.widget.Toast
 import androidx.core.content.getSystemService
 import com.google.firebase.auth.FirebaseUser
 import com.paytongunnell.workouttracker2.database.ExerciseDatabase
@@ -32,7 +33,8 @@ class WorkoutTrackerRepository(
     private val networkService: ExerciseDBService,
     private val authClient: FirebaseAuthClient,
     private val workoutTrackerServerService: WorkoutTrackerServerService,
-    private val database: ExerciseDatabase,
+    private val
+    database: ExerciseDatabase,
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) {
 
@@ -41,6 +43,73 @@ class WorkoutTrackerRepository(
     private val pendingDeletion = application.getSharedPreferences("Pending_Deletion", Context.MODE_PRIVATE)
     private val pendingUpload = application.getSharedPreferences("Pending_Upload", Context.MODE_PRIVATE)
 
+    private val eventFlagsSharedPreferences = application.getSharedPreferences("Event_Flags", Context.MODE_PRIVATE)
+
+    // Firebase
+
+    // Will get the firebase data associated with the user if it is their first time signing in on the device
+    // TODO: sync Workouts
+    suspend fun syncLocalAndFirebaseDataIfFirstTimeSigningIn(uId: String) {
+        val usersThatHaveLoggedIn = eventFlagsSharedPreferences.getStringSet("userHasLoggedIn", emptySet())
+        if (usersThatHaveLoggedIn?.contains(uId) != true) {
+            try {
+                val firebaseExercises = workoutTrackerServerService.getExercises(uId)
+                val localDatabaseExercises = database.exerciseDao.getAllExercises()
+
+                try {
+                    database.exerciseDao.upsertExercises(firebaseExercises)
+                } catch(e: Exception) {
+                    // make firebase exercises pending upload
+                    throw e
+                }
+
+                try {
+                    workoutTrackerServerService.addExercises(uId, localDatabaseExercises)
+                } catch(e: Exception) {
+                    // make local exercises pending upload
+                    throw e
+                }
+            } catch(e: Exception) {
+                Toast.makeText(application, "${e.message}", Toast.LENGTH_SHORT).show()
+            }
+            val editor = eventFlagsSharedPreferences.edit()
+            editor.putStringSet("userHasLoggedIn", ((usersThatHaveLoggedIn ?: emptySet()) + (uId)))
+            editor.apply()
+        }
+    }
+
+
+    // TEMP
+    suspend fun createFirebaseWorkout(uId: String, workout: Workout) {
+        workoutTrackerServerService.addWorkout(uId, workout)
+    }
+
+    suspend fun createFirebaseExercise(uId: String, exercise: Exercise) {
+        workoutTrackerServerService.addExercise(uId, exercise)
+    }
+
+    fun getAllFirebaseWorkouts(uId: String): Flow<Response<List<Workout>>> = flow {
+        emit(Response.Loading())
+        try {
+            val workouts = workoutTrackerServerService.getWorkouts(uId)
+            emit(Response.Success(workouts))
+        } catch(e: Exception) {
+            emit(Response.Error(e.localizedMessage))
+        }
+    }
+
+    fun getAllFirebaseExercises(uId: String): Flow<Response<List<Exercise>>> = flow {
+        emit(Response.Loading())
+        try {
+            val exercises = workoutTrackerServerService.getExercises(uId)
+            emit(Response.Success(exercises))
+        } catch(e: Exception) {
+            emit(Response.Error(e.localizedMessage))
+        }
+    }
+    // TEMP
+
+    // SharedPreferences
     fun addPendingUpload(uId: String?, key: String, value: String) {
         val editor = pendingUpload.edit()
         editor.putString("$uId:$key", value)
@@ -84,7 +153,7 @@ class WorkoutTrackerRepository(
         }
     }
 
-    fun getAllExercises(context: Context): Flow<Response<List<Exercise>>> = flow {
+    fun getAllExercises(): Flow<Response<List<Exercise>>> = flow {
         emit(Response.Loading())
 
         try {
@@ -97,7 +166,7 @@ class WorkoutTrackerRepository(
                 database.exerciseDao.upsertExercises(fetchedExercises)
                 exercises = database.exerciseDao.getAllExercises()
 
-                saveExerciseGifsToFile(context, exercises)
+                saveExerciseGifsToFile(application, exercises)
             }
 
             emit(Response.Success(exercises))

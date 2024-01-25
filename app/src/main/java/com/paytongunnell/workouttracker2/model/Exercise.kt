@@ -15,10 +15,10 @@ import kotlinx.serialization.Serializable
 @Entity("exercise_table")
 data class Exercise(
     @PrimaryKey
-    val id: String,
+    val id: String = "arg without default",
     val userId: String? = null, // used to separate the custom made exercises by the user that created them
     val customMade: Boolean = false,
-    val name: String,
+    val name: String = "arg without default",
     val gifUrl: String? = null,
     val bodyPart: BodyPart? = null,
     val equipment: ExerciseEquipment? = null,

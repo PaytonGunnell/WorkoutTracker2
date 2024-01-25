@@ -23,9 +23,9 @@ data class Workout(
     val userId: String? = null, // Used to separate the data by users if no user is logged in.
     val name: String = "Workout",
     var note: String = "",
-    var startTime: Long,
-    var endTime: Long,
-    var exercises: List<ExerciseBlock>
+    var startTime: Long = 0L,
+    var endTime: Long = 0L,
+    var exercises: List<ExerciseBlock> = emptyList()
 )
 
 val testWorkout = Workout(

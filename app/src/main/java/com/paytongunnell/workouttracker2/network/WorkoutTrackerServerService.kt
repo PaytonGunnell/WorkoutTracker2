@@ -23,11 +23,50 @@ object WorkoutTrackerServerService {
     suspend fun addExercise(uId: String, exercise: Exercise) {
         database.child("users").child(uId).child("exercises").child(exercise.id).setValue(exercise)
     }
+
+    suspend fun addExercises(uId: String, exercises: List<Exercise>) {
+        val path = database.child("users").child(uId).child("exercises")
+
+        exercises.forEach { exercise ->
+            path.child(exercise.id).setValue(exercise)
+        }
+    }
+
     suspend fun addWorkout(uId: String, workout: Workout) {
         database.child("users").child(uId).child("workouts").child(workout.id).setValue(workout)
     }
 
+    suspend fun addWorkouts(uId: String, workouts: List<Workout>) {
+        val path = database.child("users").child(uId).child("workouts")
+
+        workouts.forEach { workout ->
+            path.child(workout.id).setValue(workout)
+        }
+    }
+
     // Get
+    suspend fun getWorkouts(uId: String): List<Workout> = suspendCancellableCoroutine { continuation ->
+        try {
+            val query = database.child("users").child(uId).child("workouts")
+            query
+                .get()
+                .addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        task.result?.let { dataSnapshot ->
+                            val data = dataSnapshot.getValue<Map<String, Workout>>()?.values
+                            data?.let { workouts ->
+                                continuation.resume(workouts.toList())
+                            }
+                        }
+                    } else {
+                        task.exception?.let { continuation.resumeWithException(it) }
+                    }
+                }
+        } catch(e: Exception) {
+            continuation.resumeWithException(e)
+        }
+    }
+
     suspend fun getExercise(uId: String, exerciseId: String): Exercise = suspendCancellableCoroutine { continuation ->
         try {
             database.child("users").child(uId).child("exercises").child(exerciseId)
@@ -38,6 +77,28 @@ object WorkoutTrackerServerService {
                             val data = dataSnapshot.getValue<Exercise>()
                             data?.let {
                                 continuation.resume(it)
+                            }
+                        }
+                    } else {
+                        task.exception?.let { continuation.resumeWithException(it) }
+                    }
+                }
+        } catch(e: Exception) {
+            continuation.resumeWithException(e)
+        }
+    }
+
+    suspend fun getExercises(uId: String): List<Exercise> = suspendCancellableCoroutine { continuation ->
+        try {
+            val query = database.child("users").child(uId).child("exercises")
+            query
+                .get()
+                .addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        task.result?.let { dataSnapshot ->
+                            val data = dataSnapshot.getValue<Map<String, Exercise>>()?.values
+                            data?.let { exercises ->
+                                continuation.resume(exercises.toList())
                             }
                         }
                     } else {

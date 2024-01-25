@@ -57,7 +57,7 @@ fun AuthTestScreen(
                     Text("Log In")
                 }
 
-                Button(onClick = { /*TODO*/ }) {
+                Button(onClick = { viewModel.continueWithoutAccount() }) {
                     Text("Continue without an account")
                 }
 
