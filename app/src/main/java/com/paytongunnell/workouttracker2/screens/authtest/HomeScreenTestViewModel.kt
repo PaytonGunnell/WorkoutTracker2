@@ -1,28 +1,18 @@
 package com.paytongunnell.workouttracker2.screens.authtest
 
 import android.app.Application
-import android.content.Context
-import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
-import androidx.work.WorkRequest
-import com.paytongunnell.workouttracker2.database.ExerciseDatabase
 import com.paytongunnell.workouttracker2.model.Exercise
 import com.paytongunnell.workouttracker2.model.ExerciseBlock
 import com.paytongunnell.workouttracker2.model.SetType
 import com.paytongunnell.workouttracker2.model.Workout
 import com.paytongunnell.workouttracker2.model.WorkoutSet
-import com.paytongunnell.workouttracker2.network.ExerciseDBService
-import com.paytongunnell.workouttracker2.network.FirebaseAuthClient
 import com.paytongunnell.workouttracker2.repository.WorkoutTrackerRepository
 import com.paytongunnell.workouttracker2.utils.Response
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import java.util.UUID
 import javax.inject.Inject
@@ -49,23 +39,34 @@ class HomeScreenTestViewModel @Inject constructor(
         user?.let {
             viewModelScope.launch {
                 repository.syncLocalAndFirebaseDataIfFirstTimeSigningIn(it.uid)
-                getExercisesFromFirebase()
                 getLocalExercises()
-//            repository.getFirebaseData(it.uid)
+                getExercisesFromFirebase()
             }
         }
     }
 
 
     // TEMP
+    fun createNewExercise() {
+        val testExercise = Exercise(
+            id = UUID.randomUUID().toString(),
+            customMade = true,
+            userId = user?.uid,
+            name = "Test Exercise"
+        )
+        viewModelScope.launch {
+            repository.createNewExercise(user?.uid, testExercise)
+            getLocalExercises()
+            getExercisesFromFirebase()
+        }
+    }
+
     fun getLocalExercises() {
-        user?.let { fbUser ->
-            viewModelScope.launch {
-                repository.getAllExercises()
-                    .collect {
-                        _localExercises.value = it
-                    }
-            }
+        viewModelScope.launch {
+            repository.getAllCustomMadeExercises()
+                .collect {
+                    _localExercises.value = it
+                }
         }
     }
 
@@ -126,6 +127,7 @@ class HomeScreenTestViewModel @Inject constructor(
         user?.let { fbUser ->
             val testExercise = Exercise(
                 id = UUID.randomUUID().toString(),
+                customMade = true,
                 userId = fbUser.uid,
                 name = "Test Exercise"
             )

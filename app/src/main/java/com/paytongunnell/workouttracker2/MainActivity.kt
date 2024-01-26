@@ -9,19 +9,24 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import com.paytongunnell.workouttracker2.datasync.ConnectivityReceiver
+import com.paytongunnell.workouttracker2.repository.WorkoutTrackerRepository
 import com.paytongunnell.workouttracker2.screens.authtest.NavGraphs
 import com.paytongunnell.workouttracker2.ui.theme.WorkoutTracker2Theme
 import com.ramcosta.composedestinations.DestinationsNavHost
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
-class MainActivity : ComponentActivity() {
+class MainActivity: ComponentActivity() {
+
+    @Inject
+    lateinit var repository: WorkoutTrackerRepository
+
+    private val cR = ConnectivityReceiver()
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        val intentFilter = IntentFilter("android.net.conn.CONNECTIVITY_CHANGE")
-        val cR = ConnectivityReceiver()
-        registerReceiver(cR, intentFilter)
 
         setContent {
             WorkoutTracker2Theme {
@@ -34,5 +39,13 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+
+        val intentFilter = IntentFilter("android.net.conn.CONNECTIVITY_CHANGE")
+        registerReceiver(cR, intentFilter)
+    }
+
+    override fun onDestroy() {
+        unregisterReceiver(cR)
+        super.onDestroy()
     }
 }

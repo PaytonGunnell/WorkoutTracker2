@@ -37,6 +37,7 @@ fun HomeScreenTest(
 
     Column {
         Text(userId ?: "null uid")
+        Text(viewModel.user?.email ?: "null email")
 
         Button(onClick = {
             viewModel.signOut()
@@ -49,6 +50,10 @@ fun HomeScreenTest(
             }
         }
 
+        Button(onClick = { viewModel.createNewExercise() }) {
+            Text("Create New Exercise")
+        }
+
 //        Button(onClick = { viewModel.createNewFirebsaeWorkout() }) {
 //            Text("Create new Workout")
 //        }
@@ -59,26 +64,29 @@ fun HomeScreenTest(
 
         Row {
             Box(modifier = Modifier.weight(1f)) {
-                when (val state = localExercises) {
-                    is Response.Loading -> {
-                        CircularProgressIndicator()
-                    }
+                Column {
+                    Text("Local")
+                    when (val state = localExercises) {
+                        is Response.Loading -> {
+                            CircularProgressIndicator()
+                        }
 
-                    is Response.Success -> {
-                        LazyColumn {
-                            items(state.data) { exercise ->
-                                Text("${exercise.id}")
-                                Divider()
+                        is Response.Success -> {
+                            LazyColumn {
+                                items(state.data) { exercise ->
+                                    Text("${exercise.id}")
+                                    Divider()
+                                }
                             }
                         }
-                    }
 
-                    is Response.Error -> {
-                        Text(state.message ?: "Error")
-                    }
+                        is Response.Error -> {
+                            Text("Error ${state.message}" ?: "Error")
+                        }
 
-                    else -> {
-                        Text("null")
+                        else -> {
+                            Text("null")
+                        }
                     }
                 }
             }
@@ -86,26 +94,29 @@ fun HomeScreenTest(
             Spacer(Modifier.weight(0.2f))
 
             Box(modifier = Modifier.weight(1f)) {
-                when (val state = exercises) {
-                    is Response.Loading -> {
-                        CircularProgressIndicator()
-                    }
+                Column {
+                    Text("Firebase")
+                    when (val state = exercises) {
+                        is Response.Loading -> {
+                            CircularProgressIndicator()
+                        }
 
-                    is Response.Success -> {
-                        LazyColumn {
-                            items(state.data) { exercise ->
-                                Text("${exercise.id}")
-                                Divider()
+                        is Response.Success -> {
+                            LazyColumn {
+                                items(state.data) { exercise ->
+                                    Text("${exercise.id}")
+                                    Divider()
+                                }
                             }
                         }
-                    }
 
-                    is Response.Error -> {
-                        Text(state.message ?: "Error")
-                    }
+                        is Response.Error -> {
+                            Text("Error ${state.message}" ?: "Error")
+                        }
 
-                    else -> {
-                        Text("null")
+                        else -> {
+                            Text("null")
+                        }
                     }
                 }
             }

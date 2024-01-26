@@ -2,25 +2,23 @@ package com.paytongunnell.workouttracker2.repository
 
 import android.app.Application
 import android.content.Context
-import android.net.ConnectivityManager
 import android.util.Log
 import android.widget.Toast
-import androidx.core.content.getSystemService
 import com.google.firebase.auth.FirebaseUser
 import com.paytongunnell.workouttracker2.database.ExerciseDatabase
 import com.paytongunnell.workouttracker2.model.Exercise
 import com.paytongunnell.workouttracker2.model.Workout
-import com.paytongunnell.workouttracker2.model.WorkoutSet
 import com.paytongunnell.workouttracker2.model.testWorkout
 import com.paytongunnell.workouttracker2.network.ExerciseDBService
 import com.paytongunnell.workouttracker2.network.FirebaseAuthClient
 import com.paytongunnell.workouttracker2.network.WorkoutTrackerServerService
 import com.paytongunnell.workouttracker2.utils.Response
+import com.paytongunnell.workouttracker2.utils.UploadTo
+import com.paytongunnell.workouttracker2.utils.UploadType
 import com.paytongunnell.workouttracker2.utils.isNetworkConnected
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -28,13 +26,12 @@ import java.io.FileOutputStream
 import java.io.InputStream
 import java.net.URL
 
-class WorkoutTrackerRepository(
+class WorkoutTrackerRepository constructor(
     private val application: Application,
     private val networkService: ExerciseDBService,
     private val authClient: FirebaseAuthClient,
     private val workoutTrackerServerService: WorkoutTrackerServerService,
-    private val
-    database: ExerciseDatabase,
+    private val database: ExerciseDatabase,
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) {
 
@@ -43,89 +40,45 @@ class WorkoutTrackerRepository(
     private val pendingDeletion = application.getSharedPreferences("Pending_Deletion", Context.MODE_PRIVATE)
     private val pendingUpload = application.getSharedPreferences("Pending_Upload", Context.MODE_PRIVATE)
 
+    // Here im using SharedPreferences so that the user is only forced to see the sign up screen once
     private val eventFlagsSharedPreferences = application.getSharedPreferences("Event_Flags", Context.MODE_PRIVATE)
 
-    // Firebase
+    // BroadcastReceiverSync
+    suspend fun syncFirebaseAfterBackOnline() {
+        Log.d("repository", "syncFirebaseAfterBackOnline:called")
+        try {
+            val user = authClient.getCurrentUser()
 
-    // Will get the firebase data associated with the user if it is their first time signing in on the device
-    // TODO: sync Workouts
-    suspend fun syncLocalAndFirebaseDataIfFirstTimeSigningIn(uId: String) {
-        val usersThatHaveLoggedIn = eventFlagsSharedPreferences.getStringSet("userHasLoggedIn", emptySet())
-        if (usersThatHaveLoggedIn?.contains(uId) != true) {
-            try {
-                val firebaseExercises = workoutTrackerServerService.getExercises(uId)
-                val localDatabaseExercises = database.exerciseDao.getAllExercises()
+            user?.let { fbUser ->
+                val exerciseIds = pendingUpload.getStringSet("${fbUser.uid}:${UploadType.EXERCISE.stringValue}:${UploadTo.FIREBASE.stringValue}", null)?.toSet()
 
-                try {
-                    database.exerciseDao.upsertExercises(firebaseExercises)
-                } catch(e: Exception) {
-                    // make firebase exercises pending upload
-                    throw e
+                exerciseIds?.let { ids ->
+                    Log.d("repository", "exerciseids not null")
+                    val exercises = database.exerciseDao.getExercisesWithIds(ids)
+                    workoutTrackerServerService.addExercises(fbUser.uid, exercises)
+
+                    addListPendingUpload(fbUser.uid, UploadType.EXERCISE, UploadTo.FIREBASE, null)
                 }
 
-                try {
-                    workoutTrackerServerService.addExercises(uId, localDatabaseExercises)
-                } catch(e: Exception) {
-                    // make local exercises pending upload
-                    throw e
+                val workoutIds = pendingUpload.getStringSet("${fbUser.uid}:${UploadType.EXERCISE.stringValue}:${UploadTo.FIREBASE.stringValue}", null)?.toSet()
+
+                workoutIds?.let { ids ->
+                    val workouts = database.workoutDao.getWorkoutsWithIds(ids)
+                    workoutTrackerServerService.addWorkouts(fbUser.uid, workouts)
+
+                    addListPendingUpload(fbUser.uid, UploadType.WORKOUT, UploadTo.FIREBASE, null)
                 }
-            } catch(e: Exception) {
-                Toast.makeText(application, "${e.message}", Toast.LENGTH_SHORT).show()
             }
-            val editor = eventFlagsSharedPreferences.edit()
-            editor.putStringSet("userHasLoggedIn", ((usersThatHaveLoggedIn ?: emptySet()) + (uId)))
-            editor.apply()
-        }
-    }
-
-
-    // TEMP
-    suspend fun createFirebaseWorkout(uId: String, workout: Workout) {
-        workoutTrackerServerService.addWorkout(uId, workout)
-    }
-
-    suspend fun createFirebaseExercise(uId: String, exercise: Exercise) {
-        workoutTrackerServerService.addExercise(uId, exercise)
-    }
-
-    fun getAllFirebaseWorkouts(uId: String): Flow<Response<List<Workout>>> = flow {
-        emit(Response.Loading())
-        try {
-            val workouts = workoutTrackerServerService.getWorkouts(uId)
-            emit(Response.Success(workouts))
         } catch(e: Exception) {
-            emit(Response.Error(e.localizedMessage))
+            Log.d("repository", "Error: ${e.message}")
         }
     }
 
-    fun getAllFirebaseExercises(uId: String): Flow<Response<List<Exercise>>> = flow {
-        emit(Response.Loading())
-        try {
-            val exercises = workoutTrackerServerService.getExercises(uId)
-            emit(Response.Success(exercises))
-        } catch(e: Exception) {
-            emit(Response.Error(e.localizedMessage))
-        }
-    }
-    // TEMP
-
-    // SharedPreferences
-    fun addPendingUpload(uId: String?, key: String, value: String) {
-        val editor = pendingUpload.edit()
-        editor.putString("$uId:$key", value)
-        editor.apply()
-    }
-
-    fun addPendingDeletion(uId: String?, key: String, value: String) {
-        val editor = pendingDeletion.edit()
-        editor.putString("$uId:$key", value)
-        editor.apply()
-    }
+    // Firebase
 
     fun getFirebaseUser(): FirebaseUser? {
         return authClient.getCurrentUser()
     }
-
     suspend fun createAccount(email: String, password: String): Flow<Response<FirebaseUser?>> = flow {
         emit(Response.Loading())
         try {
@@ -135,7 +88,6 @@ class WorkoutTrackerRepository(
             emit(Response.Error(e.localizedMessage))
         }
     }
-
     suspend fun signIn(email: String, password: String): Flow<Response<FirebaseUser?>> = flow {
         emit(Response.Loading())
 
@@ -146,14 +98,182 @@ class WorkoutTrackerRepository(
             emit(Response.Error(e.localizedMessage))
         }
     }
-
     suspend fun signOut() {
         return withContext(dispatcher) {
             authClient.signOut()
         }
     }
 
-    fun getAllExercises(): Flow<Response<List<Exercise>>> = flow {
+    // will get the firebase data associated with the user if it is their first time signing in on the device
+    suspend fun syncLocalAndFirebaseDataIfFirstTimeSigningIn(uId: String, transferData: Boolean = false) {
+        val usersThatHaveLoggedIn = eventFlagsSharedPreferences.getStringSet("userHasLoggedIn", emptySet())
+        if (usersThatHaveLoggedIn?.contains(uId) != true) {
+            try {
+                val firebaseExercises = workoutTrackerServerService.getExercises(uId)
+
+                if (transferData) {
+                    val localDatabaseExercises = database.exerciseDao.getAllCustomMadeExercises()
+
+                    if (localDatabaseExercises.isNotEmpty()) {
+                        try {
+                            workoutTrackerServerService.addExercises(uId, localDatabaseExercises)
+                        } catch (e: Exception) {
+                            // make local exercises pending upload
+                            addListPendingUpload(uId, UploadType.EXERCISE, UploadTo.FIREBASE, localDatabaseExercises.map { it.id }.toSet())
+
+                            throw e
+                        }
+                    }
+                }
+
+                firebaseExercises?.let {
+                    try {
+                            database.exerciseDao.upsertExercises(firebaseExercises)
+                    } catch(e: Exception) {
+                        // make firebase exercises pending upload
+                        addListPendingUpload(uId, UploadType.EXERCISE, UploadTo.LOCAL,firebaseExercises.map { it.id }.toSet())
+
+                        throw e
+                    }
+                }
+
+                val firebaseWorkouts = workoutTrackerServerService.getWorkouts(uId)
+
+                if (transferData) {
+                    val localDatabaseWorkouts = database.workoutDao.getAllWorkouts()
+                    if (localDatabaseWorkouts.isNotEmpty()) {
+                        try {
+                            workoutTrackerServerService.addWorkouts(uId, localDatabaseWorkouts)
+                        } catch (e: Exception) {
+                            // make local workouts pending upload
+                            addListPendingUpload(uId, UploadType.WORKOUT, UploadTo.FIREBASE, localDatabaseWorkouts.map { it.id }.toSet())
+
+                            throw e
+                        }
+                    }
+                }
+
+                firebaseWorkouts?.let {
+                    try {
+                            database.workoutDao.upsertWorkouts(firebaseWorkouts)
+
+                    } catch(e: Exception) {
+                        // make firebase workouts pending upload
+                        addListPendingUpload(uId, UploadType.WORKOUT, UploadTo.LOCAL, firebaseWorkouts.map { it.id }.toSet())
+
+                        throw e
+                    }
+                }
+
+
+            } catch(e: Exception) {
+                Toast.makeText(application, "${e.message}", Toast.LENGTH_SHORT).show()
+            }
+
+            val editor = eventFlagsSharedPreferences.edit()
+            editor.putStringSet("userHasLoggedIn", ((usersThatHaveLoggedIn ?: emptySet()) + (uId)))
+            editor.apply()
+        } else {
+            Log.d("repository", "user has logged in on device")
+        }
+    }
+
+
+    // TEMP
+    suspend fun createFirebaseWorkout(uId: String, workout: Workout) {
+        workoutTrackerServerService.addWorkout(uId, workout)
+    }
+    suspend fun createFirebaseExercise(uId: String, exercise: Exercise) {
+        workoutTrackerServerService.addExercise(uId, exercise)
+    }
+    fun getAllFirebaseWorkouts(uId: String): Flow<Response<List<Workout>>> = flow {
+        emit(Response.Loading())
+        try {
+            val workouts = workoutTrackerServerService.getWorkouts(uId)
+            if (workouts != null) {
+                emit(Response.Success(workouts))
+            } else {
+                emit(Response.Error("No Workouts"))
+            }
+        } catch(e: Exception) {
+            emit(Response.Error(e.localizedMessage))
+        }
+    }
+    fun getAllFirebaseExercises(uId: String): Flow<Response<List<Exercise>>> = flow {
+        emit(Response.Loading())
+        try {
+            if (isNetworkConnected(application)) {
+                val exercises = workoutTrackerServerService.getExercises(uId)
+                if (exercises != null) {
+                    emit(Response.Success(exercises))
+                } else {
+                    emit(Response.Error("No Exercises"))
+                }
+            } else {
+                throw IllegalArgumentException("Connect To The Internet")
+            }
+        } catch(e: Exception) {
+            emit(Response.Error(e.localizedMessage))
+        }
+    }
+    // TEMP
+
+    // SharedPreferences
+    fun hasSeenSignUpScreen(): Boolean {
+        return eventFlagsSharedPreferences.getBoolean("showSignUpOnLaunch", true)
+    }
+    fun setHasSeenSignUpScreen() {
+        val editor = eventFlagsSharedPreferences.edit()
+        editor.putBoolean("showSignUpOnLaunch", false)
+        editor.apply()
+    }
+    fun addPendingUpload(uId: String, uploadType: UploadType, uploadTo: UploadTo, id: String) {
+        val idsPendingUpload = pendingUpload.getStringSet("$uId:${uploadType.stringValue}:${uploadTo.stringValue}", emptySet())
+        val editor = pendingUpload.edit()
+        editor.putStringSet("$uId:${uploadType.stringValue}:${uploadTo.stringValue}", idsPendingUpload?.plus(id))
+        editor.apply()
+    }
+    fun addListPendingUpload(uId: String, uploadType: UploadType, uploadTo: UploadTo, idList: Set<String>?) {
+        val editor = pendingUpload.edit()
+        editor.putStringSet("$uId:${uploadType.stringValue}:${uploadTo.stringValue}", idList)
+        editor.apply()
+    }
+    fun addPendingDeletion(uId: String, uploadType: UploadType, id: String) {
+        val idsPendingDeletion = pendingDeletion.getStringSet("$uId:${uploadType.stringValue}", emptySet())
+        val editor = pendingDeletion.edit()
+        editor.putStringSet("$uId:${uploadType.stringValue}", idsPendingDeletion?.plus(id))
+        editor.apply()
+    }
+
+    // API
+    suspend fun downloadExercisesFromApi() {
+        try {
+            val count = database.exerciseDao.getCount()
+
+            if (count <= 0) {
+                val fetchedExercises = networkService.getExercises()
+                database.exerciseDao.upsertExercises(fetchedExercises)
+
+                val exercises = database.exerciseDao.getAllExercises()
+                saveExerciseGifsToFile(application, exercises)
+            }
+        } catch(e: Exception) {
+            Toast.makeText(application, "${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // Local Database
+    fun getAllCustomMadeExercises(): Flow<Response<List<Exercise>>> = flow {
+        emit(Response.Loading())
+
+        try {
+            var exercises = database.exerciseDao.getAllCustomMadeExercises()
+            emit(Response.Success(exercises))
+        } catch(e: Exception) {
+            emit(Response.Error(e.localizedMessage))
+        }
+    }
+    fun getAllLocalExercises(): Flow<Response<List<Exercise>>> = flow {
         emit(Response.Loading())
 
         try {
@@ -162,7 +282,7 @@ class WorkoutTrackerRepository(
 
             if (exercises.isEmpty()) {
                 Log.d("getAll", "isEmpty")
-                val fetchedExercises = networkService.getExercises(10000)
+                val fetchedExercises = networkService.getExercises()
                 database.exerciseDao.upsertExercises(fetchedExercises)
                 exercises = database.exerciseDao.getAllExercises()
 
@@ -176,41 +296,44 @@ class WorkoutTrackerRepository(
             emit(Response.Error(e.message))
         }
     }
-
+    suspend fun getAllLocalWorkouts(): List<Workout> {
+        return withContext(Dispatchers.IO) {
+            database.workoutDao.getAllWorkouts()
+        }
+    }
     suspend fun getExercise(withId: String): Exercise {
         return withContext(Dispatchers.IO) {
             database.exerciseDao.getExercise(withId)
         }
     }
-
-    suspend fun deleteAllHistory() {
+    suspend fun deleteAllWorkouts() {
         withContext(Dispatchers.IO) {
             database.workoutDao.deleteAllWorkouts()
         }
     }
-
     suspend fun updateExercise(exercise: Exercise) {
         withContext(Dispatchers.IO) {
             database.exerciseDao.updateExercise(exercise)
         }
     }
 
-    suspend fun updateExercises(exercises: List<WorkoutSet>) {
-        withContext(Dispatchers.IO) {
-            exercises.forEach {
-                database.exerciseDao.updateExerciseById(
-                    timeStampLastClicked = it.timestamp ?: System.currentTimeMillis(),
-                    prevLbs = it.previousLbs,
-                    prevReps = it.previousReps,
-                    newPrevLbs = it.previousLbs,
-                    newPrevReps = it.previousReps,
-                    id = it.exerciseId
-                )
-            }
-        }
-    }
+//    suspend fun updateExercises(exercises: List<WorkoutSet>) {
+//        withContext(Dispatchers.IO) {
+//            exercises.forEach {
+//                database.exerciseDao.upsertExercises(exercises)
+//                database.exerciseDao.updateExerciseById(
+//                    timeStampLastClicked = it.timestamp ?: System.currentTimeMillis(),
+//                    prevLbs = it.previousLbs,
+//                    prevReps = it.previousReps,
+//                    newPrevLbs = it.previousLbs,
+//                    newPrevReps = it.previousReps,
+//                    id = it.exerciseId
+//                )
+//            }
+//        }
+//    }
 
-    suspend fun saveNewExercise(uId: String?, exercise: Exercise) {
+    suspend fun createNewExercise(uId: String?, exercise: Exercise) {
         withContext(Dispatchers.IO) {
             database.exerciseDao.upsert(exercise)
             uId?.let {
@@ -218,30 +341,35 @@ class WorkoutTrackerRepository(
                     try {
                         workoutTrackerServerService.addExercise(uId, exercise)
                     } catch (e: Exception) {
-                        addPendingUpload(uId, exercise.id, "exercise")
+                        addPendingUpload(uId, UploadType.EXERCISE, UploadTo.FIREBASE, exercise.id)
+                        Toast.makeText(application, "${e.message}", Toast.LENGTH_SHORT).show()
                     }
                 } else {
-                    addPendingUpload(uId, exercise.id, "exercise")
+                    addPendingUpload(uId, UploadType.EXERCISE, UploadTo.FIREBASE, exercise.id)
                 }
             }
         }
     }
 
-    suspend fun saveNewWorkout(workout: Workout) {
+    suspend fun createNewWorkout(uId: String, workout: Workout) {
         withContext(Dispatchers.IO) {
             database.workoutDao.upsert(workout)
-        }
-    }
 
-    suspend fun getAllWorkouts(): List<Workout> {
-        return withContext(Dispatchers.IO) {
-            val all = database.workoutDao.getAllWorkouts()
-            all.ifEmpty {
-                listOf(testWorkout, testWorkout, testWorkout.copy(startTime = System.currentTimeMillis() - 30000000), testWorkout.copy(startTime = 1000003))
+            uId?.let {
+                if (isNetworkConnected(application)) {
+                    try {
+                        workoutTrackerServerService.addWorkout(uId, workout)
+                    } catch (e: Exception) {
+                        addPendingUpload(uId, UploadType.WORKOUT, UploadTo.FIREBASE, workout.id)
+                        Toast.makeText(application, "${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+                    addPendingUpload(uId, UploadType.WORKOUT, UploadTo.FIREBASE, workout.id)
+                }
             }
-
         }
     }
+
 
     suspend fun saveExerciseGifsToFile(context: Context, exercises: List<Exercise>) {
         withContext(Dispatchers.IO) {

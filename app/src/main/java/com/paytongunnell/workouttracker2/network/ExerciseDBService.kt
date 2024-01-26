@@ -29,14 +29,14 @@ object ExerciseDBService {
             }
         }
 
-    suspend fun getBodyPartExercises(bodyPart: BodyPart, limit: Int, offset: Int): List<Exercise> = client
+    suspend fun getBodyPartExercises(bodyPart: BodyPart, limit: Int = 5, offset: Int): List<Exercise> = client
         .get("$BASE_URL/exercises/bodyPart/${bodyPart.stringValue.lowercase()}?limit=$limit&offset=$offset") { urlHeaders.forEach { (key, value) ->
             header(key, value)
         } }
         .body()
 
     // will get the first x exercises for each body part
-    suspend fun getExercises(limit: Int = 10, offset: Int = 0): List<Exercise> {
+    suspend fun getExercises(limit: Int = 5, offset: Int = 0): List<Exercise> {
         val exercises = BodyPart.values().map { bodyPart ->
             coroutineScope { getBodyPartExercises(bodyPart, limit, offset) }
         }

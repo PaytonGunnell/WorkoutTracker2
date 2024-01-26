@@ -6,37 +6,44 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseUser
 import com.paytongunnell.workouttracker2.repository.WorkoutTrackerRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class LoadingTestViewModel @Inject constructor(
     application: Application,
-    repository: WorkoutTrackerRepository
+    private val repository: WorkoutTrackerRepository
 ): AndroidViewModel(application) {
 
     private var _user by mutableStateOf<FirebaseUser?>(null)
     val user: FirebaseUser?
         get() = _user
 
-    // Here im using SharedPreferences so that the user is only forced to see the sign up screen once
-    private val eventFlagsSharedPreferences = application.getSharedPreferences("Event_Flags", Context.MODE_PRIVATE)
+    private var _finished by mutableStateOf(false)
+    val finished: Boolean
+        get() = _finished
 
     init {
         _user = repository.getFirebaseUser()
+        viewModelScope.launch {
+            repository.downloadExercisesFromApi()
+            _finished = true
+        }
     }
 
 
     // Shared Preferences methods
     fun hasSeenSignUpScreen(): Boolean {
-        return eventFlagsSharedPreferences.getBoolean("showSignUpOnLaunch", true)
+        return repository.hasSeenSignUpScreen()
     }
 
     fun setHasSeenSignUpScreen() {
-        val editor = eventFlagsSharedPreferences.edit()
-        editor.putBoolean("showSignUpOnLaunch", false)
-        editor.apply()
+        repository.setHasSeenSignUpScreen()
     }
 }

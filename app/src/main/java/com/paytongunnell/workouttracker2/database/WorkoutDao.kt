@@ -12,6 +12,9 @@ interface WorkoutDao {
     @Upsert
     suspend fun upsert(workout: Workout)
 
+    @Upsert
+    suspend fun upsertWorkouts(workouts: List<Workout>)
+
     @Delete
     suspend fun deleteWorkout(workout: Workout)
 
@@ -20,4 +23,7 @@ interface WorkoutDao {
 
     @Query("SELECT * FROM workout_table ORDER BY startTime")
     suspend fun getAllWorkouts(): List<Workout>
+
+    @Query("SELECT * FROM workout_table WHERE id IN (:workoutIds)")
+    suspend fun getWorkoutsWithIds(workoutIds: Set<String>): List<Workout>
 }

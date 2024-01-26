@@ -3,7 +3,12 @@ package com.paytongunnell.workouttracker2.screens.authtest
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.paytongunnell.workouttracker2.screens.authtest.destinations.AuthTestScreenDestination
 import com.paytongunnell.workouttracker2.screens.authtest.destinations.HomeScreenTestDestination
@@ -20,13 +25,18 @@ fun LoadingTestScreen(
     viewModel: LoadingTestViewModel = hiltViewModel()
 ) {
 
-    LaunchedEffect(Unit) {
-        if (viewModel.user == null && viewModel.hasSeenSignUpScreen()) {
-            viewModel.setHasSeenSignUpScreen()
-            navigator.navigate(AuthTestScreenDestination())
-        } else {
-            navigator.navigate(HomeScreenTestDestination(viewModel.user?.uid ?: "null uid"))
+    var launch by remember { mutableStateOf(false) }
+
+    LaunchedEffect(viewModel.finished) {
+        if (launch) {
+            if (viewModel.user == null && viewModel.hasSeenSignUpScreen()) {
+                viewModel.setHasSeenSignUpScreen()
+                navigator.navigate(AuthTestScreenDestination())
+            } else {
+                navigator.navigate(HomeScreenTestDestination(viewModel.user?.uid ?: "null uid"))
+            }
         }
+        launch = true
     }
 
     CircularProgressIndicator()

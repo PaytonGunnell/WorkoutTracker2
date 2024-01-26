@@ -10,6 +10,7 @@ import com.paytongunnell.workouttracker2.model.Exercise
 import com.paytongunnell.workouttracker2.model.Workout
 import kotlinx.coroutines.suspendCancellableCoroutine
 import java.io.ByteArrayOutputStream
+import java.lang.RuntimeException
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
@@ -45,21 +46,22 @@ object WorkoutTrackerServerService {
     }
 
     // Get
-    suspend fun getWorkouts(uId: String): List<Workout> = suspendCancellableCoroutine { continuation ->
+    suspend fun getWorkouts(uId: String): List<Workout>? = suspendCancellableCoroutine { continuation ->
         try {
             val query = database.child("users").child(uId).child("workouts")
             query
                 .get()
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
-                        task.result?.let { dataSnapshot ->
-                            val data = dataSnapshot.getValue<Map<String, Workout>>()?.values
-                            data?.let { workouts ->
-                                continuation.resume(workouts.toList())
-                            }
-                        }
+                        val data = task.result.getValue<Map<String, Workout>>()?.values?.toList()
+                        continuation.resume(data)
                     } else {
-                        task.exception?.let { continuation.resumeWithException(it) }
+                        val e = task.exception
+                        if (e != null) {
+                            continuation.resumeWithException(e)
+                        } else {
+                            continuation.resumeWithException(RuntimeException("Unknown error during getWorkouts"))
+                        }
                     }
                 }
         } catch(e: Exception) {
@@ -67,20 +69,21 @@ object WorkoutTrackerServerService {
         }
     }
 
-    suspend fun getExercise(uId: String, exerciseId: String): Exercise = suspendCancellableCoroutine { continuation ->
+    suspend fun getExercise(uId: String, exerciseId: String): Exercise? = suspendCancellableCoroutine { continuation ->
         try {
             database.child("users").child(uId).child("exercises").child(exerciseId)
                 .get()
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
-                        task.result?.let { dataSnapshot ->
-                            val data = dataSnapshot.getValue<Exercise>()
-                            data?.let {
-                                continuation.resume(it)
-                            }
-                        }
+                        val data = task.result.getValue<Exercise>()
+                        continuation.resume(data)
                     } else {
-                        task.exception?.let { continuation.resumeWithException(it) }
+                        val e = task.exception
+                        if (e != null) {
+                            continuation.resumeWithException(e)
+                        } else {
+                            continuation.resumeWithException(RuntimeException("Unknown error during getWorkouts"))
+                        }
                     }
                 }
         } catch(e: Exception) {
@@ -88,21 +91,22 @@ object WorkoutTrackerServerService {
         }
     }
 
-    suspend fun getExercises(uId: String): List<Exercise> = suspendCancellableCoroutine { continuation ->
+    suspend fun getExercises(uId: String): List<Exercise>? = suspendCancellableCoroutine { continuation ->
         try {
             val query = database.child("users").child(uId).child("exercises")
             query
                 .get()
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
-                        task.result?.let { dataSnapshot ->
-                            val data = dataSnapshot.getValue<Map<String, Exercise>>()?.values
-                            data?.let { exercises ->
-                                continuation.resume(exercises.toList())
-                            }
-                        }
+                        val data = task.result.getValue<Map<String, Exercise>>()?.values?.toList()
+                        continuation.resume(data)
                     } else {
-                        task.exception?.let { continuation.resumeWithException(it) }
+                        val e = task.exception
+                        if (e != null) {
+                            continuation.resumeWithException(e)
+                        } else {
+                            continuation.resumeWithException(RuntimeException("Unknown error during getWorkouts"))
+                        }
                     }
                 }
         } catch(e: Exception) {
