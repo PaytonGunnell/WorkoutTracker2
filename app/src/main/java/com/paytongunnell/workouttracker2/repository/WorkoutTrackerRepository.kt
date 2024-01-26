@@ -8,7 +8,6 @@ import com.google.firebase.auth.FirebaseUser
 import com.paytongunnell.workouttracker2.database.ExerciseDatabase
 import com.paytongunnell.workouttracker2.model.Exercise
 import com.paytongunnell.workouttracker2.model.Workout
-import com.paytongunnell.workouttracker2.model.testWorkout
 import com.paytongunnell.workouttracker2.network.ExerciseDBService
 import com.paytongunnell.workouttracker2.network.FirebaseAuthClient
 import com.paytongunnell.workouttracker2.network.WorkoutTrackerServerService
@@ -34,7 +33,7 @@ class WorkoutTrackerRepository constructor(
     private val database: ExerciseDatabase,
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) {
-
+    
     // Stores the id's of all exercises or workouts deleted/created while offline so that when the app is back online the
     // firebase data will be synced with the local data
     private val pendingDeletion = application.getSharedPreferences("Pending_Deletion", Context.MODE_PRIVATE)
@@ -43,34 +42,103 @@ class WorkoutTrackerRepository constructor(
     // Here im using SharedPreferences so that the user is only forced to see the sign up screen once
     private val eventFlagsSharedPreferences = application.getSharedPreferences("Event_Flags", Context.MODE_PRIVATE)
 
-    // BroadcastReceiverSync
-    suspend fun syncFirebaseAfterBackOnline() {
-        Log.d("repository", "syncFirebaseAfterBackOnline:called")
-        try {
+    suspend fun deleteExercise(exerciseId: String) {
+        withContext(dispatcher) {
             val user = authClient.getCurrentUser()
 
-            user?.let { fbUser ->
-                val exerciseIds = pendingUpload.getStringSet("${fbUser.uid}:${UploadType.EXERCISE.stringValue}:${UploadTo.FIREBASE.stringValue}", null)?.toSet()
+            database.exerciseDao.deleteExerciseWithId(exerciseId)
 
-                exerciseIds?.let { ids ->
-                    Log.d("repository", "exerciseids not null")
-                    val exercises = database.exerciseDao.getExercisesWithIds(ids)
-                    workoutTrackerServerService.addExercises(fbUser.uid, exercises)
-
-                    addListPendingUpload(fbUser.uid, UploadType.EXERCISE, UploadTo.FIREBASE, null)
-                }
-
-                val workoutIds = pendingUpload.getStringSet("${fbUser.uid}:${UploadType.EXERCISE.stringValue}:${UploadTo.FIREBASE.stringValue}", null)?.toSet()
-
-                workoutIds?.let { ids ->
-                    val workouts = database.workoutDao.getWorkoutsWithIds(ids)
-                    workoutTrackerServerService.addWorkouts(fbUser.uid, workouts)
-
-                    addListPendingUpload(fbUser.uid, UploadType.WORKOUT, UploadTo.FIREBASE, null)
+            user?.uid?.let { uId ->
+                if (isNetworkConnected(application)) {
+                    try {
+                        workoutTrackerServerService.deleteExercise(uId, exerciseId)
+                    } catch (e: Exception) {
+                        // add exercise to pending deletion
+                        addPendingDeletion(uId, UploadType.EXERCISE, exerciseId)
+                    }
+                } else {
+                    // add exercise to pending deletion
+                    addPendingDeletion(uId, UploadType.EXERCISE, exerciseId)
                 }
             }
-        } catch(e: Exception) {
-            Log.d("repository", "Error: ${e.message}")
+        }
+    }
+
+    suspend fun deleteWorkout(workoutId: String) {
+        withContext(dispatcher) {
+            val user = authClient.getCurrentUser()
+
+            database.workoutDao.deleteWorkoutWithId(workoutId)
+
+            user?.uid?.let { uId ->
+                if (isNetworkConnected(application)) {
+                    try {
+                        workoutTrackerServerService.deleteWorkout(uId, workoutId)
+                    } catch (e: Exception) {
+                        // add exercise to pending deletion
+                        addPendingDeletion(uId, UploadType.WORKOUT, workoutId)
+                    }
+                } else {
+                    // add exercise to pending deletion
+                    addPendingDeletion(uId, UploadType.WORKOUT, workoutId)
+                }
+            }
+        }
+    }
+
+    // BroadcastReceiverSync
+    suspend fun syncFirebaseAfterBackOnline() {
+        withContext(dispatcher) {
+            try {
+                val user = authClient.getCurrentUser()
+
+                user?.uid?.let { uId ->
+                    // Upload Exercises
+                    val exerciseIdsToBeUploaded = pendingUpload.getStringSet("${uId}:${UploadType.EXERCISE.stringValue}:${UploadTo.FIREBASE.stringValue}", null)?.toList()
+
+                    exerciseIdsToBeUploaded?.let { ids ->
+                        Log.d("repository", "exerciseids not null")
+                        val exercises = database.exerciseDao.getExercisesWithIds(ids)
+                        workoutTrackerServerService.addExercises(uId, exercises)
+
+                        // set list of exercise id's to null
+                        addListPendingUpload(uId, UploadType.EXERCISE, UploadTo.FIREBASE, null)
+                    }
+
+                    // Upload Workouts
+                    val workoutIdsToBeUploaded = pendingUpload.getStringSet("$uId:${UploadType.EXERCISE.stringValue}:${UploadTo.FIREBASE.stringValue}", null)?.toList()
+
+                    workoutIdsToBeUploaded?.let { ids ->
+                        val workouts = database.workoutDao.getWorkoutsWithIds(ids)
+                        workoutTrackerServerService.addWorkouts(uId, workouts)
+
+                        // set list of workout id's to null
+                        addListPendingUpload(uId, UploadType.WORKOUT, UploadTo.FIREBASE, null)
+                    }
+
+                    // Delete Exercises
+                    val exerciseIdsToBeDeleted = pendingDeletion.getStringSet("$uId:${UploadType.EXERCISE.stringValue}", null)?.toList()
+
+                    exerciseIdsToBeDeleted?.let { ids ->
+                        workoutTrackerServerService.deleteExercises(uId, ids)
+
+                        // set list of exercise id's to null
+                        addListPendingDeletion(uId, UploadType.EXERCISE, null)
+                    }
+
+                    // Delete Workouts
+                    val workoutIdsToBeDeleted = pendingDeletion.getStringSet("$uId:${UploadType.WORKOUT.stringValue}", null)?.toList()
+
+                    workoutIdsToBeDeleted?.let { ids ->
+                        workoutTrackerServerService.deleteWorkouts(uId, ids)
+
+                        // set list of workout id's to null
+                        addListPendingDeletion(uId, UploadType.WORKOUT, null)
+                    }
+                }
+            } catch(e: Exception) {
+                Log.d("repository", "Error: ${e.message}")
+            }
         }
     }
 
@@ -80,22 +148,26 @@ class WorkoutTrackerRepository constructor(
         return authClient.getCurrentUser()
     }
     suspend fun createAccount(email: String, password: String): Flow<Response<FirebaseUser?>> = flow {
-        emit(Response.Loading())
-        try {
-            val user = authClient.createAccount(email, password)
-            emit(Response.Success(user))
-        } catch(e: Exception) {
-            emit(Response.Error(e.localizedMessage))
+        withContext(dispatcher) {
+            emit(Response.Loading())
+            try {
+                val user = authClient.createAccount(email, password)
+                emit(Response.Success(user))
+            } catch (e: Exception) {
+                emit(Response.Error(e.localizedMessage))
+            }
         }
     }
     suspend fun signIn(email: String, password: String): Flow<Response<FirebaseUser?>> = flow {
-        emit(Response.Loading())
+        withContext(dispatcher) {
+            emit(Response.Loading())
 
-        try {
-            val user = authClient.signIn(email, password)
-            emit(Response.Success(user))
-        } catch(e: Exception) {
-            emit(Response.Error(e.localizedMessage))
+            try {
+                val user = authClient.signIn(email, password)
+                emit(Response.Success(user))
+            } catch (e: Exception) {
+                emit(Response.Error(e.localizedMessage))
+            }
         }
     }
     suspend fun signOut() {
@@ -104,77 +176,83 @@ class WorkoutTrackerRepository constructor(
         }
     }
 
-    // will get the firebase data associated with the user if it is their first time signing in on the device
-    suspend fun syncLocalAndFirebaseDataIfFirstTimeSigningIn(uId: String, transferData: Boolean = false) {
-        val usersThatHaveLoggedIn = eventFlagsSharedPreferences.getStringSet("userHasLoggedIn", emptySet())
-        if (usersThatHaveLoggedIn?.contains(uId) != true) {
-            try {
-                val firebaseExercises = workoutTrackerServerService.getExercises(uId)
+    // will get the firebase data associated with the user and save it to the local database if it is their first time signing in on the device
+    suspend fun syncLocalAndFirebaseDataIfFirstTimeSigningIn(transferData: Boolean = false) {
+        withContext(dispatcher) {
+            val user =  authClient.getCurrentUser()
 
-                if (transferData) {
-                    val localDatabaseExercises = database.exerciseDao.getAllCustomMadeExercises()
-
-                    if (localDatabaseExercises.isNotEmpty()) {
-                        try {
-                            workoutTrackerServerService.addExercises(uId, localDatabaseExercises)
-                        } catch (e: Exception) {
-                            // make local exercises pending upload
-                            addListPendingUpload(uId, UploadType.EXERCISE, UploadTo.FIREBASE, localDatabaseExercises.map { it.id }.toSet())
-
-                            throw e
-                        }
-                    }
-                }
-
-                firebaseExercises?.let {
+            user?.uid?.let { uId ->
+                val usersThatHaveLoggedIn = eventFlagsSharedPreferences.getStringSet("userHasLoggedIn", emptySet())
+                if (usersThatHaveLoggedIn?.contains(uId) != true) {
                     try {
-                            database.exerciseDao.upsertExercises(firebaseExercises)
-                    } catch(e: Exception) {
-                        // make firebase exercises pending upload
-                        addListPendingUpload(uId, UploadType.EXERCISE, UploadTo.LOCAL,firebaseExercises.map { it.id }.toSet())
+                        val firebaseExercises = workoutTrackerServerService.getExercises(uId)
 
-                        throw e
-                    }
-                }
+                        if (transferData) {
+                            val localDatabaseExercises = database.exerciseDao.getAllCustomMadeExercises()
 
-                val firebaseWorkouts = workoutTrackerServerService.getWorkouts(uId)
+                            if (localDatabaseExercises.isNotEmpty()) {
+                                try {
+                                    workoutTrackerServerService.addExercises(uId, localDatabaseExercises)
+                                } catch (e: Exception) {
+                                    // make local exercises pending upload
+                                    addListPendingUpload(uId, UploadType.EXERCISE, UploadTo.FIREBASE, localDatabaseExercises.map { it.id }.toSet())
 
-                if (transferData) {
-                    val localDatabaseWorkouts = database.workoutDao.getAllWorkouts()
-                    if (localDatabaseWorkouts.isNotEmpty()) {
-                        try {
-                            workoutTrackerServerService.addWorkouts(uId, localDatabaseWorkouts)
-                        } catch (e: Exception) {
-                            // make local workouts pending upload
-                            addListPendingUpload(uId, UploadType.WORKOUT, UploadTo.FIREBASE, localDatabaseWorkouts.map { it.id }.toSet())
-
-                            throw e
+                                    throw e
+                                }
+                            }
                         }
-                    }
-                }
 
-                firebaseWorkouts?.let {
-                    try {
-                            database.workoutDao.upsertWorkouts(firebaseWorkouts)
+                        firebaseExercises?.let {
+                            try {
+                                    database.exerciseDao.upsertExercises(firebaseExercises)
+                            } catch(e: Exception) {
+                                // make firebase exercises pending upload
+                                addListPendingUpload(uId, UploadType.EXERCISE, UploadTo.LOCAL,firebaseExercises.map { it.id }.toSet())
+
+                                throw e
+                            }
+                        }
+
+                        val firebaseWorkouts = workoutTrackerServerService.getWorkouts(uId)
+
+                        if (transferData) {
+                            val localDatabaseWorkouts = database.workoutDao.getAllWorkouts()
+                            if (localDatabaseWorkouts.isNotEmpty()) {
+                                try {
+                                    workoutTrackerServerService.addWorkouts(uId, localDatabaseWorkouts)
+                                } catch (e: Exception) {
+                                    // make local workouts pending upload
+                                    addListPendingUpload(uId, UploadType.WORKOUT, UploadTo.FIREBASE, localDatabaseWorkouts.map { it.id }.toSet())
+
+                                    throw e
+                                }
+                            }
+                        }
+
+                        firebaseWorkouts?.let {
+                            try {
+                                    database.workoutDao.upsertWorkouts(firebaseWorkouts)
+
+                            } catch(e: Exception) {
+                                // make firebase workouts pending upload
+                                addListPendingUpload(uId, UploadType.WORKOUT, UploadTo.LOCAL, firebaseWorkouts.map { it.id }.toSet())
+
+                                throw e
+                            }
+                        }
+
 
                     } catch(e: Exception) {
-                        // make firebase workouts pending upload
-                        addListPendingUpload(uId, UploadType.WORKOUT, UploadTo.LOCAL, firebaseWorkouts.map { it.id }.toSet())
-
-                        throw e
+                        Toast.makeText(application, "${e.message}", Toast.LENGTH_SHORT).show()
                     }
+
+                    val editor = eventFlagsSharedPreferences.edit()
+                    editor.putStringSet("userHasLoggedIn", ((usersThatHaveLoggedIn ?: emptySet()) + (uId)))
+                    editor.apply()
+                } else {
+                    Log.d("repository", "user has logged in on device")
                 }
-
-
-            } catch(e: Exception) {
-                Toast.makeText(application, "${e.message}", Toast.LENGTH_SHORT).show()
             }
-
-            val editor = eventFlagsSharedPreferences.edit()
-            editor.putStringSet("userHasLoggedIn", ((usersThatHaveLoggedIn ?: emptySet()) + (uId)))
-            editor.apply()
-        } else {
-            Log.d("repository", "user has logged in on device")
         }
     }
 
@@ -244,75 +322,86 @@ class WorkoutTrackerRepository constructor(
         editor.putStringSet("$uId:${uploadType.stringValue}", idsPendingDeletion?.plus(id))
         editor.apply()
     }
+    fun addListPendingDeletion(uId: String, uploadType: UploadType, idList: Set<String>?) {
+        val editor = pendingDeletion.edit()
+        editor.putStringSet("$uId:${uploadType.stringValue}", idList)
+        editor.apply()
+    }
 
     // API
     suspend fun downloadExercisesFromApi() {
-        try {
-            val count = database.exerciseDao.getCount()
+        withContext(dispatcher) {
+            try {
+                val count = database.exerciseDao.getCount()
 
-            if (count <= 0) {
-                val fetchedExercises = networkService.getExercises()
-                database.exerciseDao.upsertExercises(fetchedExercises)
+                if (count <= 0) {
+                    val fetchedExercises = networkService.getExercises()
+                    database.exerciseDao.upsertExercises(fetchedExercises)
 
-                val exercises = database.exerciseDao.getAllExercises()
-                saveExerciseGifsToFile(application, exercises)
+                    val exercises = database.exerciseDao.getAllExercises()
+                    saveExerciseGifsToFile(application, exercises)
+                }
+            } catch (e: Exception) {
+                Toast.makeText(application, "${e.message}", Toast.LENGTH_SHORT).show()
             }
-        } catch(e: Exception) {
-            Toast.makeText(application, "${e.message}", Toast.LENGTH_SHORT).show()
         }
     }
 
     // Local Database
     fun getAllCustomMadeExercises(): Flow<Response<List<Exercise>>> = flow {
-        emit(Response.Loading())
+        withContext(dispatcher) {
+            emit(Response.Loading())
 
-        try {
-            var exercises = database.exerciseDao.getAllCustomMadeExercises()
-            emit(Response.Success(exercises))
-        } catch(e: Exception) {
-            emit(Response.Error(e.localizedMessage))
+            try {
+                var exercises = database.exerciseDao.getAllCustomMadeExercises()
+                emit(Response.Success(exercises))
+            } catch (e: Exception) {
+                emit(Response.Error(e.localizedMessage))
+            }
         }
     }
     fun getAllLocalExercises(): Flow<Response<List<Exercise>>> = flow {
-        emit(Response.Loading())
+        withContext(dispatcher) {
+            emit(Response.Loading())
 
-        try {
-            var exercises = database.exerciseDao.getAllExercises()
-            Log.d("getAll", "size: ${exercises.count()}")
+            try {
+                var exercises = database.exerciseDao.getAllExercises()
+                Log.d("getAll", "size: ${exercises.count()}")
 
-            if (exercises.isEmpty()) {
-                Log.d("getAll", "isEmpty")
-                val fetchedExercises = networkService.getExercises()
-                database.exerciseDao.upsertExercises(fetchedExercises)
-                exercises = database.exerciseDao.getAllExercises()
+                if (exercises.isEmpty()) {
+                    Log.d("getAll", "isEmpty")
+                    val fetchedExercises = networkService.getExercises()
+                    database.exerciseDao.upsertExercises(fetchedExercises)
+                    exercises = database.exerciseDao.getAllExercises()
 
-                saveExerciseGifsToFile(application, exercises)
+                    saveExerciseGifsToFile(application, exercises)
+                }
+
+                emit(Response.Success(exercises))
+
+            } catch (e: Exception) {
+                Log.d("getAll", "Msg: ${e.message}")
+                emit(Response.Error(e.message))
             }
-
-            emit(Response.Success(exercises))
-
-        } catch (e: Exception) {
-            Log.d("getAll", "Msg: ${e.message}")
-            emit(Response.Error(e.message))
         }
     }
     suspend fun getAllLocalWorkouts(): List<Workout> {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatcher) {
             database.workoutDao.getAllWorkouts()
         }
     }
     suspend fun getExercise(withId: String): Exercise {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatcher) {
             database.exerciseDao.getExercise(withId)
         }
     }
     suspend fun deleteAllWorkouts() {
-        withContext(Dispatchers.IO) {
+        withContext(dispatcher) {
             database.workoutDao.deleteAllWorkouts()
         }
     }
     suspend fun updateExercise(exercise: Exercise) {
-        withContext(Dispatchers.IO) {
+        withContext(dispatcher) {
             database.exerciseDao.updateExercise(exercise)
         }
     }
@@ -333,10 +422,13 @@ class WorkoutTrackerRepository constructor(
 //        }
 //    }
 
-    suspend fun createNewExercise(uId: String?, exercise: Exercise) {
-        withContext(Dispatchers.IO) {
+    suspend fun createNewExercise(exercise: Exercise) {
+        withContext(dispatcher) {
             database.exerciseDao.upsert(exercise)
-            uId?.let {
+
+            val user = authClient.getCurrentUser()
+
+            user?.uid?.let { uId ->
                 if (isNetworkConnected(application)) {
                     try {
                         workoutTrackerServerService.addExercise(uId, exercise)
@@ -351,11 +443,13 @@ class WorkoutTrackerRepository constructor(
         }
     }
 
-    suspend fun createNewWorkout(uId: String, workout: Workout) {
-        withContext(Dispatchers.IO) {
+    suspend fun createNewWorkout(workout: Workout) {
+        withContext(dispatcher) {
             database.workoutDao.upsert(workout)
 
-            uId?.let {
+            val user = authClient.getCurrentUser()
+
+            user?.uid?.let { uId ->
                 if (isNetworkConnected(application)) {
                     try {
                         workoutTrackerServerService.addWorkout(uId, workout)
@@ -370,9 +464,8 @@ class WorkoutTrackerRepository constructor(
         }
     }
 
-
     suspend fun saveExerciseGifsToFile(context: Context, exercises: List<Exercise>) {
-        withContext(Dispatchers.IO) {
+        withContext(dispatcher) {
             try {
                 val directory = File(context.filesDir, "gifs")
 
@@ -408,7 +501,7 @@ class WorkoutTrackerRepository constructor(
     }
 
     suspend fun saveGifToFile(context: Context, gifUrl: String, fileName: String) {
-        withContext(Dispatchers.IO) {
+        withContext(dispatcher) {
             try {
                 // Create a directory in the app's internal storage
                 val directory = File(context.filesDir, "gifs")

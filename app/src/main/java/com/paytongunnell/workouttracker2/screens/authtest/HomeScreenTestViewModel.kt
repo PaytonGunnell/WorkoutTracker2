@@ -1,6 +1,7 @@
 package com.paytongunnell.workouttracker2.screens.authtest
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.paytongunnell.workouttracker2.model.Exercise
@@ -13,6 +14,7 @@ import com.paytongunnell.workouttracker2.utils.Response
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import java.util.UUID
 import javax.inject.Inject
@@ -25,11 +27,11 @@ class HomeScreenTestViewModel @Inject constructor(
 
     val user = repository.getFirebaseUser()
 
-    private var _exercises = MutableStateFlow<Response<List<Exercise>>?>(null)
+    private var _exercises = MutableStateFlow<Response<List<Exercise>>>(Response.Loading())
     val exercises = _exercises.asStateFlow()
 
-    private var _localExercises = MutableStateFlow<Response<List<Exercise>>?>(null)
-    val localExercises = _exercises.asStateFlow()
+    private var _localExercises = MutableStateFlow<Response<List<Exercise>>>(Response.Loading())
+    val localExercises = _localExercises.asStateFlow()
 
     private var _workouts = MutableStateFlow<Response<List<Workout>>?>(null)
     val workouts = _workouts.asStateFlow()
@@ -37,16 +39,35 @@ class HomeScreenTestViewModel @Inject constructor(
 
     init {
         user?.let {
-            viewModelScope.launch {
-                repository.syncLocalAndFirebaseDataIfFirstTimeSigningIn(it.uid)
-                getLocalExercises()
-                getExercisesFromFirebase()
-            }
+            getData(it.uid)
+        }
+    }
+
+    fun getData(uId: String) {
+        viewModelScope.launch {
+            repository.syncLocalAndFirebaseDataIfFirstTimeSigningIn(uId)
+            getLocalExercises()
+            getExercisesFromFirebase()
+//            repository.getAllLocalExercises()
+//                .collect {
+//                    if (it is Response.Success) {
+//                        Log.d("homeScreenTestViewModel", "getData:collect: ${it.data.count()}")
+//                    }
+//                    _localExercises.value = it
+//                }
         }
     }
 
 
     // TEMP
+    fun deleteExercise(exerciseId: String) {
+        viewModelScope.launch {
+            repository.deleteExercise(exerciseId)
+            getLocalExercises()
+            getExercisesFromFirebase()
+        }
+    }
+
     fun createNewExercise() {
         val testExercise = Exercise(
             id = UUID.randomUUID().toString(),
@@ -63,6 +84,10 @@ class HomeScreenTestViewModel @Inject constructor(
 
     fun getLocalExercises() {
         viewModelScope.launch {
+//            repository.getAllLocalExercises()
+//                .collect {
+//                    _localExercises.value = it
+//                }
             repository.getAllCustomMadeExercises()
                 .collect {
                     _localExercises.value = it

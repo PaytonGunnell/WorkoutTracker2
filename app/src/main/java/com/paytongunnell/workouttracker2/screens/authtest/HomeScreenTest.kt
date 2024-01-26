@@ -74,7 +74,12 @@ fun HomeScreenTest(
                         is Response.Success -> {
                             LazyColumn {
                                 items(state.data) { exercise ->
-                                    Text("${exercise.id}")
+                                    Row {
+                                        Text("${exercise.id.substring(0, minOf(exercise.id.length, 5))}")
+                                        Button(onClick = { viewModel.deleteExercise(exercise.id) }) {
+                                            Text("Del")
+                                        }
+                                    }
                                     Divider()
                                 }
                             }
@@ -85,7 +90,7 @@ fun HomeScreenTest(
                         }
 
                         else -> {
-                            Text("null")
+                            Text("Null")
                         }
                     }
                 }
@@ -104,7 +109,7 @@ fun HomeScreenTest(
                         is Response.Success -> {
                             LazyColumn {
                                 items(state.data) { exercise ->
-                                    Text("${exercise.id}")
+                                    Text("${exercise.id.substring(0, minOf(exercise.id.length, 5))}")
                                     Divider()
                                 }
                             }

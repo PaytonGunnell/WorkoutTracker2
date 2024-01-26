@@ -26,10 +26,13 @@ interface ExerciseDao {
     suspend fun getExercise(id: String): Exercise
 
     @Query("SELECT * FROM exercise_table WHERE id IN (:exerciseIds)")
-    suspend fun getExercisesWithIds(exerciseIds: Set<String>): List<Exercise>
+    suspend fun getExercisesWithIds(exerciseIds: List<String>): List<Exercise>
 
     @Query("DELETE FROM exercise_table")
     suspend fun deleteAllExercises()
+
+    @Query("DELETE FROM exercise_table WHERE id = :exerciseId")
+    suspend fun deleteExerciseWithId(exerciseId: String)
 
     @Update
     suspend fun updateExercise(exercise: Exercise)

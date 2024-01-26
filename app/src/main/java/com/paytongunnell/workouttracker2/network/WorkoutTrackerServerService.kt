@@ -19,7 +19,7 @@ object WorkoutTrackerServerService {
     private val database = Firebase.database.reference
     private val storage = Firebase.storage.reference
 
-    // Realtime Database
+    /// Realtime Database
     // Add
     suspend fun addExercise(uId: String, exercise: Exercise) {
         database.child("users").child(uId).child("exercises").child(exercise.id).setValue(exercise)
@@ -114,7 +114,30 @@ object WorkoutTrackerServerService {
         }
     }
 
-    // Cloud Storage
+    // Delete
+    suspend fun deleteExercise(uId: String, exerciseId: String) {
+        database.child("users").child(uId).child("exercises").child(exerciseId).removeValue()
+    }
+    suspend fun deleteExercises(uId: String, exerciseIds: List<String>) {
+        val path = database.child("users").child(uId).child("exercises")
+
+        exerciseIds.forEach { id ->
+            path.child(id).removeValue()
+        }
+    }
+
+    suspend fun deleteWorkout(uId: String, workoutId: String) {
+        database.child("users").child(uId).child("exercises").child(workoutId).removeValue()
+    }
+    suspend fun deleteWorkouts(uId: String, workoutIds: List<String>) {
+        val path = database.child("users").child(uId).child("workouts")
+
+        workoutIds.forEach { id ->
+            path.child(id).removeValue()
+        }
+    }
+
+    /// Cloud Storage
     fun saveImage(uId: String, path: String, bitmap: Bitmap) {
         val baos = ByteArrayOutputStream()
         bitmap.compress(Bitmap.CompressFormat.JPEG, 50, baos)
