@@ -39,13 +39,13 @@ class HomeScreenTestViewModel @Inject constructor(
 
     init {
         user?.let {
-            getData(it.uid)
+            getData()
         }
     }
 
-    fun getData(uId: String) {
+    fun getData() {
         viewModelScope.launch {
-            repository.syncLocalAndFirebaseDataIfFirstTimeSigningIn(uId)
+            repository.syncLocalAndFirebaseDataIfFirstTimeSigningIn()
             getLocalExercises()
             getExercisesFromFirebase()
 //            repository.getAllLocalExercises()
@@ -76,7 +76,7 @@ class HomeScreenTestViewModel @Inject constructor(
             name = "Test Exercise"
         )
         viewModelScope.launch {
-            repository.createNewExercise(user?.uid, testExercise)
+            repository.createNewExercise(testExercise)
             getLocalExercises()
             getExercisesFromFirebase()
         }

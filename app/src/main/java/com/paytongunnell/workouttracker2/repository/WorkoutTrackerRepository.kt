@@ -33,7 +33,7 @@ class WorkoutTrackerRepository constructor(
     private val database: ExerciseDatabase,
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) {
-    
+
     // Stores the id's of all exercises or workouts deleted/created while offline so that when the app is back online the
     // firebase data will be synced with the local data
     private val pendingDeletion = application.getSharedPreferences("Pending_Deletion", Context.MODE_PRIVATE)
