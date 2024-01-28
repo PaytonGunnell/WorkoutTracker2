@@ -1,11 +1,14 @@
 package com.paytongunnell.workouttracker2.utils
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.Locale
 
+@RequiresApi(Build.VERSION_CODES.O)
 fun formatTime1(millis: Long): String {
     val instant = Instant.ofEpochMilli(millis)
     val date = Date.from(instant)
@@ -28,6 +31,7 @@ fun formatMillisToHoursAndMinutes(millis: Long): String {
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 fun formatMillisToDateTime(millis: Long): String {
     val instant = Instant.ofEpochMilli(millis)
     val zoneId = ZoneId.systemDefault()

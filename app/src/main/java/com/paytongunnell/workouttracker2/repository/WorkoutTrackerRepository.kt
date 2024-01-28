@@ -148,26 +148,22 @@ class WorkoutTrackerRepository constructor(
         return authClient.getCurrentUser()
     }
     suspend fun createAccount(email: String, password: String): Flow<Response<FirebaseUser?>> = flow {
-        withContext(dispatcher) {
-            emit(Response.Loading())
-            try {
-                val user = authClient.createAccount(email, password)
-                emit(Response.Success(user))
-            } catch (e: Exception) {
-                emit(Response.Error(e.localizedMessage))
-            }
+        emit(Response.Loading())
+        try {
+            val user = authClient.createAccount(email, password)
+            emit(Response.Success(user))
+        } catch (e: Exception) {
+            emit(Response.Error(e.localizedMessage))
         }
     }
     suspend fun signIn(email: String, password: String): Flow<Response<FirebaseUser?>> = flow {
-        withContext(dispatcher) {
-            emit(Response.Loading())
+        emit(Response.Loading())
 
-            try {
-                val user = authClient.signIn(email, password)
-                emit(Response.Success(user))
-            } catch (e: Exception) {
-                emit(Response.Error(e.localizedMessage))
-            }
+        try {
+            val user = authClient.signIn(email, password)
+            emit(Response.Success(user))
+        } catch (e: Exception) {
+            emit(Response.Error(e.localizedMessage))
         }
     }
     suspend fun signOut() {
@@ -349,40 +345,35 @@ class WorkoutTrackerRepository constructor(
 
     // Local Database
     fun getAllCustomMadeExercises(): Flow<Response<List<Exercise>>> = flow {
-        withContext(dispatcher) {
-            emit(Response.Loading())
-
-            try {
-                var exercises = database.exerciseDao.getAllCustomMadeExercises()
-                emit(Response.Success(exercises))
-            } catch (e: Exception) {
-                emit(Response.Error(e.localizedMessage))
-            }
+        emit(Response.Loading())
+        try {
+            var exercises = database.exerciseDao.getAllCustomMadeExercises()
+            emit(Response.Success(exercises))
+        } catch (e: Exception) {
+            emit(Response.Error(e.localizedMessage))
         }
     }
     fun getAllLocalExercises(): Flow<Response<List<Exercise>>> = flow {
-        withContext(dispatcher) {
-            emit(Response.Loading())
+        emit(Response.Loading())
 
-            try {
-                var exercises = database.exerciseDao.getAllExercises()
-                Log.d("getAll", "size: ${exercises.count()}")
+        try {
+            var exercises = database.exerciseDao.getAllExercises()
+            Log.d("getAll", "size: ${exercises.count()}")
 
-                if (exercises.isEmpty()) {
-                    Log.d("getAll", "isEmpty")
-                    val fetchedExercises = networkService.getExercises()
-                    database.exerciseDao.upsertExercises(fetchedExercises)
-                    exercises = database.exerciseDao.getAllExercises()
+            if (exercises.isEmpty()) {
+                Log.d("getAll", "isEmpty")
+                val fetchedExercises = networkService.getExercises()
+                database.exerciseDao.upsertExercises(fetchedExercises)
+                exercises = database.exerciseDao.getAllExercises()
 
-                    saveExerciseGifsToFile(application, exercises)
-                }
-
-                emit(Response.Success(exercises))
-
-            } catch (e: Exception) {
-                Log.d("getAll", "Msg: ${e.message}")
-                emit(Response.Error(e.message))
+                saveExerciseGifsToFile(application, exercises)
             }
+
+            emit(Response.Success(exercises))
+
+        } catch (e: Exception) {
+            Log.d("getAll", "Msg: ${e.message}")
+            emit(Response.Error(e.message))
         }
     }
     suspend fun getAllLocalWorkouts(): List<Workout> {
