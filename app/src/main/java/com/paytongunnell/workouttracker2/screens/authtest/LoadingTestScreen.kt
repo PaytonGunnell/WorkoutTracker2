@@ -8,14 +8,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.paytongunnell.workouttracker2.screens.authtest.destinations.AuthTestScreenDestination
-import com.paytongunnell.workouttracker2.screens.authtest.destinations.HomeScreenTestDestination
+import com.paytongunnell.workouttracker2.screens.destinations.AuthTestScreenDestination
+import com.paytongunnell.workouttracker2.screens.destinations.TabBarScreenDestination
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootNavGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import kotlinx.coroutines.CoroutineScope
 
 @RootNavGraph(start = true)
 @Destination
@@ -31,9 +28,10 @@ fun LoadingTestScreen(
         if (launch) {
             if (viewModel.user == null && viewModel.hasSeenSignUpScreen()) {
                 viewModel.setHasSeenSignUpScreen()
-                navigator.navigate(AuthTestScreenDestination())
+                navigator.navigate(AuthTestScreenDestination)
             } else {
-                navigator.navigate(HomeScreenTestDestination(viewModel.user?.uid ?: "null uid"))
+                navigator.navigate(TabBarScreenDestination)
+//                navigator.navigate(HomeScreenTestDestination(viewModel.user?.uid ?: "null uid"))
             }
         }
         launch = true

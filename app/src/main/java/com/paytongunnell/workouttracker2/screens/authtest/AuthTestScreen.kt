@@ -6,17 +6,15 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.ramcosta.composedestinations.annotation.Destination
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.paytongunnell.workouttracker2.screens.authtest.destinations.HomeScreenTestDestination
+import com.paytongunnell.workouttracker2.screens.destinations.TabBarScreenDestination
 import com.paytongunnell.workouttracker2.utils.Response
+import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 
 @Destination
@@ -34,7 +32,8 @@ fun AuthTestScreen(
         }
         is Response.Success -> {
             run {
-                navigator.navigate(HomeScreenTestDestination(userState.data?.uid))
+                navigator.navigate(TabBarScreenDestination)
+//                navigator.navigate(HomeScreenTestDestination(userState.data?.uid))
             }
         }
         else -> {

@@ -1,5 +1,6 @@
 package com.paytongunnell.workouttracker2.screens.tabbar.workouttracker
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -110,6 +111,7 @@ class WorkoutTrackerViewModel @Inject constructor(
         )
     }
     fun addExercises(exercises: List<Exercise>) {
+        Log.d("workouttrackerviewmodel", "addExercises: ${exercises}")
         val exerciseBlocks = exercises.map { exercise ->
             ExerciseBlock(
                 exerciseId = exercise.id,

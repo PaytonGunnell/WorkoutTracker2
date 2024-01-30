@@ -18,7 +18,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.firebase.auth.FirebaseUser
 import com.ramcosta.composedestinations.annotation.Destination
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.paytongunnell.workouttracker2.screens.authtest.destinations.AuthTestScreenDestination
+import com.paytongunnell.workouttracker2.screens.destinations.AuthTestScreenDestination
 import com.paytongunnell.workouttracker2.utils.Response
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 

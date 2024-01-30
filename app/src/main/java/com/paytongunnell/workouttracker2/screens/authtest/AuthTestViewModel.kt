@@ -64,6 +64,5 @@ class AuthTestViewModel @Inject constructor(
                     }
                 }
         }
-        Log.d("authtest", "user: ${_user}")
     }
 }

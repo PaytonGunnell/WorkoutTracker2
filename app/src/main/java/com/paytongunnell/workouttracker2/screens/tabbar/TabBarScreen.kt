@@ -1,5 +1,6 @@
 package com.paytongunnell.workouttracker2.screens.tabbar
 
+import android.annotation.SuppressLint
 import android.graphics.BitmapFactory
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -37,6 +38,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.ramcosta.composedestinations.annotation.Destination
 import com.paytongunnell.workouttracker2.screens.tabbar.exercises.ExercisesScreen
 import com.paytongunnell.workouttracker2.screens.tabbar.exercises.composables.ExerciseInfoPopup
 import com.paytongunnell.workouttracker2.screens.tabbar.exercises.composables.IconTab
@@ -50,11 +52,16 @@ import com.paytongunnell.workouttracker2.screens.tabbar.workouttracker.composabl
 import com.paytongunnell.workouttracker2.screens.tabbar.workouttracker.composables.FinishWorkoutPopup
 import com.paytongunnell.workouttracker2.screens.tabbar.workouttracker.composables.RestTimerPopup
 import com.paytongunnell.workouttracker2.utils.Response
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.launch
 
+@SuppressLint("UnrememberedMutableState")
 @OptIn(ExperimentalMaterial3Api::class)
+@Destination
 @Composable
 fun TabBarScreen(
+    navigator: DestinationsNavigator,
+    modifier: Modifier = Modifier,
     viewModel: TabBarViewModel = hiltViewModel(),
     workoutTrackerViewModel: WorkoutTrackerViewModel = hiltViewModel()
 ) {
@@ -65,7 +72,7 @@ fun TabBarScreen(
     // sheet
     val coroutineScope = rememberCoroutineScope()
     val sheetState = rememberBottomSheetScaffoldState(rememberStandardBottomSheetState(initialValue = SheetValue.Hidden, skipHiddenState = false))
-    var isPartiallyExpanded by remember { mutableStateOf(sheetState.bottomSheetState.currentValue) }
+    var isPartiallyExpanded by mutableStateOf(sheetState.bottomSheetState.currentValue)
 
 
     // Exercise popup toggles
@@ -81,7 +88,7 @@ fun TabBarScreen(
     var showWorkoutInfo by remember { mutableStateOf(false) }
 
     // dim effect
-    var dimBackground by remember { mutableStateOf(showRestTimer || showWorkoutInfo || showFinishWorkout || showAddExercises || showExerciseInfo || showNewExercise) }
+    var dimBackground by mutableStateOf(showRestTimer || showWorkoutInfo || showFinishWorkout || showAddExercises || showExerciseInfo || showNewExercise)
 
 
 
@@ -91,7 +98,7 @@ fun TabBarScreen(
         }
         is Response.Success -> {
             Box(
-                modifier = Modifier
+                modifier = modifier
                     .fillMaxSize()
             ) {
                 Column(

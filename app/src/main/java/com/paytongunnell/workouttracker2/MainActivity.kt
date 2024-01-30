@@ -10,7 +10,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import com.paytongunnell.workouttracker2.datasync.ConnectivityReceiver
 import com.paytongunnell.workouttracker2.repository.WorkoutTrackerRepository
-import com.paytongunnell.workouttracker2.screens.authtest.NavGraphs
+import com.paytongunnell.workouttracker2.screens.NavGraphs
 import com.paytongunnell.workouttracker2.ui.theme.WorkoutTracker2Theme
 import com.ramcosta.composedestinations.DestinationsNavHost
 import dagger.hilt.android.AndroidEntryPoint
