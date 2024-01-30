@@ -376,6 +376,28 @@ class WorkoutTrackerRepository constructor(
             emit(Response.Error(e.message))
         }
     }
+
+//    suspend fun getAllLocalExercises(): List<Exercise> {
+//        return withContext(dispatcher) {
+//            try {
+//                var exercises = database.exerciseDao.getAllExercises()
+//
+//                if (exercises.isEmpty()) {
+//                    val fetchedExercises = networkService.getExercises()
+//                    database.exerciseDao.upsertExercises(fetchedExercises)
+//                    exercises = database.exerciseDao.getAllExercises()
+//
+//                    saveExerciseGifsToFile(application, exercises)
+//                }
+//
+//                return@withContext exercises
+//
+//            } catch (e: Exception) {
+//                Log.d("getAll", "Msg: ${e.message}")
+//                return@withContext emptyList()
+//            }
+//        }
+//    }
     suspend fun getAllLocalWorkouts(): List<Workout> {
         return withContext(dispatcher) {
             database.workoutDao.getAllWorkouts()
@@ -530,9 +552,9 @@ class WorkoutTrackerRepository constructor(
         }
     }
 
-    suspend fun getGifs(context: Context): Map<String, File?> {
+    suspend fun getGifs(): Map<String, File?> {
         try {
-            return File(context.filesDir, "gifs").listFiles().associateBy { it.name }
+            return File(application.filesDir, "gifs").listFiles().associateBy { it.name }
         } catch (e: Exception) {
             Log.d("getGifs", "Error: ${e.message}")
             return emptyMap()

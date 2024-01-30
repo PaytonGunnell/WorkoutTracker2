@@ -10,32 +10,46 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+    primary = Color(0xFF121212), // Grey
+    secondary = Color(0xFF999999), // Dark Grey FF999999
+    tertiary = Color(0xFFFAFAFA), // Light Grey //B4B9C1  FAFAFA
+    background = Color(0xFF121212), // Dark Background
+    surface = Color(0xFF404040), // Dark Background
+    onPrimary = Color(0xFFFFFFFF), // White
+    onSecondary = Color(0xFFFFFFFF), // White
+    onTertiary = Color(0xFFFFFFFF), // White
+    onBackground = Color(0xFFFFFFFF), // White
+    onSurface = Color(0xFFFFFFFF) // White
 )
+val <DarkColorScheme> DarkColorScheme.lightBlueButton: Color
+    get() = Color(0xFF3399FF)
+val <DarkColorScheme> DarkColorScheme.goGreen: Color
+    get() = Color(0xFFA5D255)
+val <DarkColorScheme> DarkColorScheme.stopRed: Color
+    get() = Color(0xFFFF000D)
+val <DarkColorScheme> DarkColorScheme.lighterGray: Color
+    get() = Color(0xFFCCCCCC)
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
-
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
+    primary = Color(0xFF212121), // Dark Grey
+    secondary = Color(0xFF424242), // Grey
+    tertiary = Color(0xFF616161), // Light Grey
+    background = Color(0xFFFFFFFF), // White
+    surface = Color(0xFFFFFFFF), // White
+    onPrimary = Color(0xFFFFFFFF), // White
+    onSecondary = Color(0xFFFFFFFF), // White
+    onTertiary = Color(0xFF000000), // Black
+    onBackground = Color(0xFF000000), // Black
+    onSurface = Color(0xFF000000) // Black
 )
+
 
 @Composable
 fun WorkoutTracker2Theme(
@@ -47,7 +61,7 @@ fun WorkoutTracker2Theme(
     val colorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+            if (darkTheme) DarkColorScheme else LightColorScheme
         }
 
         darkTheme -> DarkColorScheme

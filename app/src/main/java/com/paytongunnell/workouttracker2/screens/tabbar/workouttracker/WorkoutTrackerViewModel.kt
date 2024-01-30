@@ -3,8 +3,12 @@ package com.paytongunnell.workouttracker2.screens.tabbar.workouttracker
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.AbstractSavedStateViewModelFactory
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import androidx.savedstate.SavedStateRegistryOwner
 import com.paytongunnell.workouttracker2.model.Exercise
 import com.paytongunnell.workouttracker2.model.ExerciseBlock
 import com.paytongunnell.workouttracker2.model.WorkoutSet
@@ -15,20 +19,22 @@ import com.paytongunnell.workouttracker2.utils.StopwatchTimer
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.lang.IllegalArgumentException
 import javax.inject.Inject
 
 @HiltViewModel
 class WorkoutTrackerViewModel @Inject constructor(
-    private val uId: String?,
-    private val repository: WorkoutTrackerRepository
+    private val repository: WorkoutTrackerRepository,
 ): ViewModel() {
+
+    private val uId = repository.getFirebaseUser()?.uid
 
     private var _workoutTracker by mutableStateOf(WorkoutTracker(uId = uId))
     val workoutTracker: WorkoutTracker
         get() = _workoutTracker
 
     val stopwatch = StopwatchTimer()
-    private var restTimer: CountDownTimer? = null
+    var restTimer: CountDownTimer? = null
 
     init {
         restTimer = CountDownTimer(count = 120000L)
