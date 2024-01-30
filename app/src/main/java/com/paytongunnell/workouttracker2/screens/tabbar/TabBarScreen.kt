@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -36,9 +37,18 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
+import com.paytongunnell.workouttracker2.screens.tabbar.exercises.ExercisesScreen
+import com.paytongunnell.workouttracker2.screens.tabbar.exercises.composables.ExerciseInfoPopup
+import com.paytongunnell.workouttracker2.screens.tabbar.exercises.composables.IconTab
+import com.paytongunnell.workouttracker2.screens.tabbar.exercises.composables.NewExercisePopup
+import com.paytongunnell.workouttracker2.screens.tabbar.history.HistoryScreen
+import com.paytongunnell.workouttracker2.screens.tabbar.history.composables.WorkoutInfoPopup
+import com.paytongunnell.workouttracker2.screens.tabbar.startworkout.StartWorkoutScreen
 import com.paytongunnell.workouttracker2.screens.tabbar.workouttracker.WorkoutTrackerPopup
 import com.paytongunnell.workouttracker2.screens.tabbar.workouttracker.WorkoutTrackerViewModel
+import com.paytongunnell.workouttracker2.screens.tabbar.workouttracker.composables.AddExercisesPopup
+import com.paytongunnell.workouttracker2.screens.tabbar.workouttracker.composables.FinishWorkoutPopup
+import com.paytongunnell.workouttracker2.screens.tabbar.workouttracker.composables.RestTimerPopup
 import com.paytongunnell.workouttracker2.utils.Response
 import kotlinx.coroutines.launch
 
@@ -109,8 +119,15 @@ fun TabBarScreen(
                                 WorkoutTrackerPopup(
                                     exercises = state.data,
                                     workoutTrackerViewModel = workoutTrackerViewModel,
-                                    modifier = Modifier
-                                        .fillMaxSize()
+                                    isPartiallyExpanded = isPartiallyExpanded == SheetValue.PartiallyExpanded,
+                                    onClickRestTimer = { showRestTimer = true },
+                                    onClickFinishWorkout = { showFinishWorkout = true },
+                                    onClickAddExercise = { showAddExercises = true },
+                                    onClickCancelWorkout = { coroutineScope.launch {
+                                        sheetState.bottomSheetState.hide()
+                                        workoutTrackerViewModel.reset()
+                                    }},
+                                    modifier = Modifier.fillMaxSize()
                                 )
                             }
                         ) {
@@ -125,7 +142,7 @@ fun TabBarScreen(
                                         LazyColumn {
                                             items(state.data) {
                                                 val img = BitmapFactory.decodeFile(
-                                                    tabBarViewModel.gifs[it.id]?.absolutePath
+                                                    viewModel.gifs[it.id]?.absolutePath
                                                         ?: null
                                                 ).asImageBitmap()
                                                 Text(it.name, color = Color.White)
@@ -137,19 +154,19 @@ fun TabBarScreen(
 
                                     1 -> {
                                         HistoryScreen(
-                                            workouts = tabBarViewModel.workouts,
+                                            workouts = viewModel.workouts,
                                             onClickWorkout = {
-                                                tabBarViewModel.clickWorkoutInfo(workout = it)
+                                                viewModel.clickWorkoutInfo(workout = it)
                                                 showWorkoutInfo = true
                                             },
-                                            onRefreshHistory = { tabBarViewModel.refreshWorkoutHistory()/*tabBarViewModel.deleteAllHistory()*/ }
+                                            onRefreshHistory = { viewModel.refreshWorkoutHistory()/*tabBarViewModel.deleteAllHistory()*/ }
                                         )
                                     }
 
                                     2 -> {
                                         StartWorkoutScreen(
                                             exercises = state.data,
-                                            gifs = tabBarViewModel.gifs,
+                                            gifs = viewModel.gifs,
                                             onStartWorkout = {
                                                 coroutineScope.launch {
                                                     workoutTrackerViewModel.startTracker()
@@ -161,12 +178,12 @@ fun TabBarScreen(
                                     3 -> {
                                         ExercisesScreen(
                                             exercises = state.data,
-                                            gifs = tabBarViewModel.gifs,
+                                            gifs = viewModel.gifs,
                                             onClickExerciseInfo = {
-                                                tabBarViewModel.clickExerciseInfo(it)
+                                                viewModel.clickExerciseInfo(it)
                                                 showExerciseInfo = true
                                             },
-                                            onCreateNewExercise = { tabBarViewModel.createNewExercise(it) },
+                                            onCreateNewExercise = { viewModel.createNewExercise(it) },
                                             onClickNewExercise = { showNewExercise = true },
                                             modifier = Modifier
                                         )
@@ -204,14 +221,14 @@ fun TabBarScreen(
                     .background(Color.Black.copy(alpha = if (dimBackground) 0.5f else 0f)))
 
                 if (showExerciseInfo) {
-                    tabBarViewModel.exerciseClicked?.let {
+                    viewModel.exerciseClicked?.let {
                         ExerciseInfoPopup(
                             exercise = it,
-                            gif = tabBarViewModel.gifs[it.id],
+                            gif = viewModel.gifs[it.id],
                             onClose = { showExerciseInfo = false },
                             onClickOffExerciseInfo = {
                                 showExerciseInfo = false
-                                tabBarViewModel.clickOffExerciseInfo()
+                                viewModel.clickOffExerciseInfo()
                             },
                             modifier = Modifier
                                 .padding(horizontal = 10.dp)
@@ -222,7 +239,7 @@ fun TabBarScreen(
                 }
                 if (showNewExercise) {
                     NewExercisePopup(
-                        onCreateNewExercise = { tabBarViewModel.createNewExercise(it) },
+                        onCreateNewExercise = { viewModel.createNewExercise(it) },
                         onDismiss = { showNewExercise = false },
                         modifier = Modifier
                             .padding(horizontal = 15.dp)
@@ -233,7 +250,7 @@ fun TabBarScreen(
                 if (showAddExercises) {
                     AddExercisesPopup(
                         exercises = state.data,
-                        gifs = tabBarViewModel.gifs,
+                        gifs = viewModel.gifs,
                         onAddExercises = { workoutTrackerViewModel.addExercises(it) },
                         onCancel = { showAddExercises = false },
                         modifier = Modifier
@@ -247,8 +264,8 @@ fun TabBarScreen(
                     FinishWorkoutPopup(
                         onClickFinish = {
                             coroutineScope.launch {
-                                workoutTrackerViewModel.onFinishWorkout()
-                                tabBarViewModel.refreshWorkoutHistory()
+                                workoutTrackerViewModel.finishWorkout()
+                                viewModel.refreshWorkoutHistory()
                                 showFinishWorkout = false
                                 sheetState.bottomSheetState.hide()
                             }
@@ -263,7 +280,7 @@ fun TabBarScreen(
                     )
                 }
                 if (showWorkoutInfo) {
-                    tabBarViewModel.workoutClicked?.let { workout ->
+                    viewModel.workoutClicked?.let { workout ->
                         WorkoutInfoPopup(
                             workout = workout,
                             onClose = { showWorkoutInfo = false },
@@ -284,9 +301,9 @@ fun TabBarScreen(
                         onSetRestTimer = {
                             workoutTrackerViewModel.setRestTimer(it)
                         },
-                        onStopRestTimer = { workoutTrackerViewModel.pauseTimer() },
-                        onResetRestTimer = { workoutTrackerViewModel.resetTimer() },
-                        isTimerRunning = workoutTrackerViewModel.isTimerRunning,
+                        onStopRestTimer = { workoutTrackerViewModel.pauseRestTimer() },
+                        onResetRestTimer = { workoutTrackerViewModel.resetRestTimer() },
+                        isTimerRunning = workoutTrackerViewModel.workoutTracker.isRestTimerRunning,
                         modifier = Modifier
                             .padding(horizontal = 15.dp)
                             .align(Alignment.Center)

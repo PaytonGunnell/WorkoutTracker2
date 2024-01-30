@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -43,7 +44,11 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.paytongunnell.workouttracker2.R
 import com.paytongunnell.workouttracker2.model.Exercise
+import com.paytongunnell.workouttracker2.screens.tabbar.workouttracker.composables.ExerciseBlockView
+import com.paytongunnell.workouttracker2.ui.theme.goGreen
 import com.paytongunnell.workouttracker2.ui.theme.lightBlueButton
+import com.paytongunnell.workouttracker2.ui.theme.lighterGray
+import com.paytongunnell.workouttracker2.ui.theme.stopRed
 import com.paytongunnell.workouttracker2.utils.formatElapsedTime
 import com.paytongunnell.workouttracker2.utils.formatRestTime
 
@@ -54,7 +59,9 @@ fun WorkoutTrackerPopup(
     isPartiallyExpanded: Boolean,
     workoutTrackerViewModel: WorkoutTrackerViewModel = hiltViewModel(),
     onClickRestTimer: () -> Unit,
-    ,
+    onClickFinishWorkout: () -> Unit,
+    onClickAddExercise: () -> Unit,
+    onClickCancelWorkout: () -> Unit,
     modifier: Modifier = Modifier
 ) {
 
@@ -143,7 +150,7 @@ fun WorkoutTrackerPopup(
                     Row(horizontalArrangement = Arrangement.Start, verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 10.dp)) {
 
                         BasicTextField(
-                            value = workoutTrackerViewModel.workout.name,
+                            value = workoutTrackerViewModel.workoutTracker.workout.name,
 //            enabled = changeName,
                             textStyle = MaterialTheme.typography.titleMedium.copy(color = MaterialTheme.colorScheme.onBackground),
                             readOnly = !changeName,
@@ -192,7 +199,7 @@ fun WorkoutTrackerPopup(
 
                 item {
                     Text(
-                        text = formatElapsedTime(workoutTrackerViewModel.elapsedMillis),
+                        text = formatElapsedTime(workoutTrackerViewModel.workoutTracker.elapsedMillis),
                         style = MaterialTheme.typography.titleSmall.copy(color = MaterialTheme.colorScheme.lighterGray),
                         modifier = Modifier.padding(vertical = 3.dp)
                     )
@@ -201,13 +208,13 @@ fun WorkoutTrackerPopup(
                 item {
                     Box(modifier = Modifier.padding(vertical = 10.dp)) {
                         BasicTextField(
-                            value = workoutTrackerViewModel.workout.note, onValueChange = {
+                            value = workoutTrackerViewModel.workoutTracker.workout.note, onValueChange = {
                                 workoutTrackerViewModel.changeNote(it)
                             },
                             textStyle = MaterialTheme.typography.labelLarge.copy(color = MaterialTheme.colorScheme.onBackground)
                         )
 
-                        if (workoutTrackerViewModel.workout.note == "" || workoutTrackerViewModel.workout.note == null) {
+                        if (workoutTrackerViewModel.workoutTracker.workout.note == "" || workoutTrackerViewModel.workoutTracker.workout.note == null) {
                             Text(
                                 text = "Notes",
                                 style = MaterialTheme.typography.titleSmall.copy(color = MaterialTheme.colorScheme.secondary)
@@ -220,7 +227,7 @@ fun WorkoutTrackerPopup(
                     Column(modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 40.dp)) {
-                        workoutTrackerViewModel.workout.exercises.forEachIndexed { blockIndex, exerciseBlock ->
+                        workoutTrackerViewModel.workoutTracker.workout.exercises.forEachIndexed { blockIndex, exerciseBlock ->
                             ExerciseBlockView(
                                 exerciseBlock = exerciseBlock,
                                 onChangeSetWeight = { index, weight ->
@@ -281,7 +288,5 @@ fun WorkoutTrackerPopup(
                 }
             }
         }
-
-
     }
 }

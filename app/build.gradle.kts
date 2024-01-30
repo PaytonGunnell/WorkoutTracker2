@@ -15,7 +15,7 @@ android {
 
     defaultConfig {
         applicationId = "com.paytongunnell.workouttracker2"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -107,6 +107,10 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
     androidTestImplementation(platform(libs.compose.bom))
     androidTestImplementation(libs.ui.test.junit4)
+
+    // Glide
+    implementation(libs.glide)
+    implementation(libs.glide.compose)
 
     // Debug
     debugImplementation(libs.ui.tooling)
