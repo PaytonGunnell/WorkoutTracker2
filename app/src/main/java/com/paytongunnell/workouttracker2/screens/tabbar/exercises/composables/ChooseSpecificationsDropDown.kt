@@ -20,7 +20,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.paytongunnell.workouttracker2.R
 import com.paytongunnell.workouttracker2.model.BodyPart
 import com.paytongunnell.workouttracker2.model.ExerciseEquipment
 import com.paytongunnell.workouttracker2.model.ExerciseFilter
@@ -83,7 +85,7 @@ fun <T> ChooseSpecificationsDropDown(
                     shape = MaterialTheme.shapes.small
                 )            ) {
                 Text(
-                    exerciseFilter.bodyPart?.stringValue ?: "Any Category",
+                    exerciseFilter.bodyPart?.stringValue ?: stringResource(R.string.any_category),
                     style = MaterialTheme.typography.labelLarge,
                     modifier = Modifier.align(Alignment.Center)
                 )
@@ -95,10 +97,11 @@ fun <T> ChooseSpecificationsDropDown(
                 .background(
                     color = if (exerciseFilter.equipment != null) MaterialTheme.colorScheme.lightBlueButton else MaterialTheme.colorScheme.surfaceVariant,
                     shape = MaterialTheme.shapes.small
-                )                .clickable { onClickDropDownMenu() }
+                )
+                .clickable { onClickDropDownMenu() }
             ) {
                 Text(
-                    exerciseFilter.equipment?.stringValue ?: "Any Equipment",
+                    exerciseFilter.equipment?.stringValue ?: stringResource(R.string.any_equipment),
                     style = MaterialTheme.typography.labelLarge,
                     modifier = Modifier.align(Alignment.Center)
                 )

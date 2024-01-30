@@ -111,7 +111,6 @@ class WorkoutTrackerViewModel @Inject constructor(
         )
     }
     fun addExercises(exercises: List<Exercise>) {
-        Log.d("workouttrackerviewmodel", "addExercises: ${exercises}")
         val exerciseBlocks = exercises.map { exercise ->
             ExerciseBlock(
                 exerciseId = exercise.id,

@@ -34,8 +34,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.paytongunnell.workouttracker2.R
 import com.paytongunnell.workouttracker2.model.BodyPart
 import com.paytongunnell.workouttracker2.model.Exercise
 import com.paytongunnell.workouttracker2.model.ExerciseEquipment
@@ -87,7 +89,10 @@ fun AddExercisesPopup(
         ) {
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp).padding(horizontal = 18.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 10.dp)
+                    .padding(horizontal = 18.dp)
             ) {
                 Box(
                     modifier = Modifier
@@ -102,13 +107,13 @@ fun AddExercisesPopup(
                     Icon(Icons.Default.Clear, contentDescription = null)
                 }
                 Text(
-                    "New",
+                    stringResource(R.string._new),
                     style = MaterialTheme.typography.blueTextButton
                 )
                 Text(
                     text = if (selectedExercises.count() > 1)
-                        "Add (${selectedExercises.count()})" else
-                        "Add",
+                        "${stringResource(R.string._new)} (${selectedExercises.count()})" else
+                        stringResource(R.string.add),
                     style = MaterialTheme.typography.titleSmall.copy(
                         color = if (selectedExercises.isNotEmpty())
                             MaterialTheme.colorScheme.lightBlueButton else
@@ -121,7 +126,10 @@ fun AddExercisesPopup(
                 )
             }
 
-            Column(modifier = Modifier.fillMaxWidth().padding(end = 5.dp).padding(horizontal = 18.dp)) {
+            Column(modifier = Modifier
+                .fillMaxWidth()
+                .padding(end = 5.dp)
+                .padding(horizontal = 18.dp)) {
                 // SearchBar
                 Row(
                     modifier = Modifier
@@ -130,7 +138,7 @@ fun AddExercisesPopup(
                 ) {
                     Surface(
                         modifier = Modifier
-                                .shadow(5.dp)
+                            .shadow(5.dp)
                             .fillMaxWidth()
                         ,
                     ) {
@@ -155,13 +163,15 @@ fun AddExercisesPopup(
                                     .padding(5.dp)
                                     .weight(1f)
                                 ,
-                                hint = "Search"
+                                hint = stringResource(R.string.search)
                             )
                         }
                     }
                 }
 
-                Row(horizontalArrangement = Arrangement.SpaceEvenly, modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp)) {
+                Row(horizontalArrangement = Arrangement.SpaceEvenly, modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 3.dp)) {
                     FilterDropDownButton(
                         enumValues = enumValues<BodyPart>(),
                         onClickDropDownMenu = { showBodyPartFilter = true },

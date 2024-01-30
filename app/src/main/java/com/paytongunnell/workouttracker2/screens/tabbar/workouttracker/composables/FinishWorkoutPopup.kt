@@ -15,8 +15,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.paytongunnell.workouttracker2.R
 import com.paytongunnell.workouttracker2.ui.theme.goGreen
 
 @Composable
@@ -37,18 +39,20 @@ fun FinishWorkoutPopup(
             .fillMaxWidth()
             .padding(20.dp)) {
             Text(
-                "Finish Workout?",
+                stringResource(R.string.finish_workout),
                 style = MaterialTheme.typography.titleSmall,
                 textAlign = TextAlign.Center
             )
-            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth().padding(vertical = 20.dp)) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 20.dp)) {
                 Text(
-                    "All invalid or empty sets will be removed.",
+                    stringResource(R.string.all_invalid_or_empty_sets_will_be_removed),
                     style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.secondary),
                     textAlign = TextAlign.Center
                 )
                 Text(
-                    "All valid sets will be marked as complete.",
+                    stringResource(R.string.all_valid_sets_will_be_marked_as_complete),
                     style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.secondary),
                     textAlign = TextAlign.Center
                 )
@@ -66,7 +70,7 @@ fun FinishWorkoutPopup(
                         .clickable { onClickCancel() }
                 ) {
                     Text(
-                        "Cancel",
+                        stringResource(R.string.cancel),
                         style = MaterialTheme.typography.titleSmall,
                         modifier = Modifier.align(Alignment.Center)
                     )
@@ -84,7 +88,7 @@ fun FinishWorkoutPopup(
                         .clickable { onClickFinish() }
                 ) {
                     Text(
-                        "Finish",
+                        stringResource(R.string.finish),
                         style = MaterialTheme.typography.titleSmall,
                         modifier = Modifier.align(Alignment.Center)
                     )

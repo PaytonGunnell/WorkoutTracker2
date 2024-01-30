@@ -1,4 +1,4 @@
-package com.paytongunnell.workouttracker2.screens.authtest
+package com.paytongunnell.workouttracker2.screens.loading
 
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
@@ -8,15 +8,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.paytongunnell.workouttracker2.screens.authtest.LoadingTestViewModel
 import com.paytongunnell.workouttracker2.screens.destinations.AuthTestScreenDestination
 import com.paytongunnell.workouttracker2.screens.destinations.TabBarScreenDestination
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootNavGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 
+@RootNavGraph(start = true)
 @Destination
 @Composable
-fun LoadingTestScreen(
+fun LoadingScreen(
     navigator: DestinationsNavigator,
     viewModel: LoadingTestViewModel = hiltViewModel()
 ) {

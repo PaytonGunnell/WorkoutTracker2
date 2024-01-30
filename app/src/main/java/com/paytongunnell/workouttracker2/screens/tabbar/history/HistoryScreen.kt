@@ -40,6 +40,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -76,7 +77,7 @@ fun HistoryScreen(
         Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
             Box {}
             Text(
-                "Calendar",
+                stringResource(R.string.calendar),
                 style = MaterialTheme.typography.blueTextButton
             )
         }
@@ -85,7 +86,7 @@ fun HistoryScreen(
             item {
                 Row(modifier.fillMaxWidth()) {
                     Text(
-                        "History",
+                        stringResource(R.string.history),
                         style = MaterialTheme.typography.titleLarge,
                         modifier = Modifier.padding(bottom = 30.dp)
                     )
@@ -96,7 +97,8 @@ fun HistoryScreen(
                                 shape = MaterialTheme.shapes.medium
                             )
                             .clickable {
-                                onRefreshHistory() }
+                                onRefreshHistory()
+                            }
                     ) {
                         Icon(imageVector = Icons.Default.Refresh, contentDescription = null)
                     }
@@ -164,7 +166,7 @@ fun HistoryScreen(
                                         Icon(painterResource(R.drawable.trophy_icon), contentDescription = null, tint = MaterialTheme.colorScheme.secondary)
                                         Spacer(modifier = Modifier.width(10.dp))
                                         Text(
-                                            "N/A",
+                                            stringResource(R.string.n_a),
                                             style = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.secondary)
                                         )
                                     }
@@ -172,12 +174,12 @@ fun HistoryScreen(
                                 Column(modifier = Modifier.fillMaxWidth()) {
                                     Row(modifier = Modifier.fillMaxWidth()) {
                                         Text(
-                                            "Exercise",
+                                            stringResource(R.string.exercise),
                                             style = MaterialTheme.typography.titleSmall,
                                             modifier = Modifier.weight(1f)
                                         )
                                         Text(
-                                            "Best Set",
+                                            stringResource(R.string.best_set),
                                             style = MaterialTheme.typography.titleSmall,
                                             modifier = Modifier.weight(1f)
                                         )
@@ -195,7 +197,7 @@ fun HistoryScreen(
                                                 modifier = Modifier.weight(1f)
                                             )
                                             Text(
-                                                if (bestSet?.weight != null && bestSet?.reps != null) "${bestSet.weight} lb x ${bestSet.reps}" else "N/A",
+                                                if (bestSet?.weight != null && bestSet?.reps != null) "${bestSet.weight} lb x ${bestSet.reps}" else stringResource(R.string.n_a),
                                                 style = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.secondary),
                                                 maxLines = 1,
                                                 overflow = TextOverflow.Ellipsis,
@@ -211,92 +213,5 @@ fun HistoryScreen(
                 }
             }
         }
-    }
-}
-
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-fun ScrollTest() {
-    var searchQuery by remember { mutableStateOf("") }
-
-    // Scroll state for fading effect
-    val scrollState = rememberLazyListState()
-
-    // Item index at which fading out should start
-    val fadeOutStartIndex = 10
-
-    LazyColumn(
-        state = scrollState,
-        contentPadding = PaddingValues(top = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        // Sticky header with fading effect
-        stickyHeader {
-            FadingTopBar(
-                scrollState = scrollState,
-                onBackClick = { /* Handle back click */ },
-                onStarClick = { /* Handle star click */ },
-                onSearchQueryChange = { searchQuery = it },
-                fadeOutStartIndex = fadeOutStartIndex
-            )
-        }
-
-        // Items
-        items(50) { index ->
-            // Replace this with your actual content
-            Text("Item $index", modifier = Modifier.padding(8.dp))
-        }
-    }
-}
-
-@Composable
-fun FadingTopBar(
-    scrollState: LazyListState,
-    onBackClick: () -> Unit,
-    onStarClick: () -> Unit,
-    onSearchQueryChange: (String) -> Unit,
-    fadeOutStartIndex: Int
-) {
-    // Calculate alpha based on scroll position and fade-out start index
-    val alpha = calculateFadeOutAlpha(scrollState, fadeOutStartIndex)
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color.Blue.copy(alpha = alpha))
-            .padding(16.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(Icons.Default.ArrowBack, contentDescription = null, modifier = Modifier.clickable(onClick = onBackClick))
-        BasicTextField(
-            value = "",
-            onValueChange = { onSearchQueryChange(it) },
-            textStyle = MaterialTheme.typography.titleSmall,
-            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Text),
-            modifier = Modifier
-                .weight(1f)
-                .padding(horizontal = 16.dp)
-        )
-        Icon(Icons.Default.Star, contentDescription = null, modifier = Modifier.clickable(onClick = onStarClick))
-    }
-}
-
-/**
- * Calculate the alpha value for fading out based on scroll position and target item index.
- */
-private fun calculateFadeOutAlpha(scrollState: LazyListState, fadeOutStartIndex: Int): Float {
-    val firstVisibleItemIndex = scrollState.firstVisibleItemIndex
-    val firstVisibleItemOffset = scrollState.firstVisibleItemScrollOffset
-
-    Log.d("scrolling", "${firstVisibleItemIndex}, ${firstVisibleItemOffset}")
-
-    return if (firstVisibleItemIndex >= fadeOutStartIndex) {
-        val scrollDistance = firstVisibleItemOffset
-        val a = 1 - (scrollDistance / 1000f).coerceIn(0f, 1f)
-        Log.d("scrolling", "a: $a")
-        a
-    } else {
-        1f
     }
 }

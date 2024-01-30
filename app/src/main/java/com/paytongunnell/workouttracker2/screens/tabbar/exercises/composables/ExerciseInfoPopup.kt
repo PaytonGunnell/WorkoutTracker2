@@ -26,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
@@ -46,7 +47,12 @@ fun ExerciseInfoPopup(
     modifier: Modifier = Modifier
 ) {
     var selectedIndex by remember { mutableStateOf(0) }
-    var tabs = arrayOf("About", "History", "Charts", "Records")
+    var tabs = arrayOf(
+        stringResource(R.string.about),
+        stringResource(R.string.history),
+        stringResource(R.string.charts),
+        stringResource(R.string.records)
+    )
 
     Box(
         modifier = modifier
@@ -84,7 +90,7 @@ fun ExerciseInfoPopup(
                     style = MaterialTheme.typography.titleSmall
                 )
                 Text(
-                    "Edit",
+                    stringResource(R.string.edit),
                     style = MaterialTheme.typography.blueTextButton.copy(Color.Black.copy(alpha = 0f))
                 )
             }
@@ -139,7 +145,7 @@ fun ExerciseInfoPopup(
                         item {
                             Column {
                                 Text(
-                                    "Instructions",
+                                    stringResource(R.string.instructions),
                                     style = MaterialTheme.typography.titleSmall,
                                     modifier = Modifier.padding(vertical = 20.dp)
                                 )

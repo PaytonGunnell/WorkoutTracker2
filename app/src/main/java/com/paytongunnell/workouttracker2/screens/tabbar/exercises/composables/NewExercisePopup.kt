@@ -22,9 +22,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.paytongunnell.workouttracker2.R
 import com.paytongunnell.workouttracker2.model.BodyPart
 import com.paytongunnell.workouttracker2.model.Exercise
 import com.paytongunnell.workouttracker2.model.ExerciseEquipment
@@ -79,11 +81,11 @@ fun NewExercisePopup(
                     Icon(Icons.Default.Clear, contentDescription = null)
                 }
                 Text(
-                    "New",
+                    stringResource(R.string._new),
                     style = MaterialTheme.typography.titleSmall
                 )
                 Text(
-                    "Save",
+                    stringResource(R.string.save),
                     style = MaterialTheme.typography.blueTextButton,
                     modifier = Modifier.clickable {
                         if (newExerciseViewModel.onClickSave()) {
@@ -107,7 +109,7 @@ fun NewExercisePopup(
                 )
                 if (nameInput == "") {
                     Text(
-                        "Exercise Name",
+                        stringResource(R.string.exercise_name),
                         style = MaterialTheme.typography.titleSmall.copy(color = MaterialTheme.colorScheme.secondary),
                         modifier = Modifier
                     )

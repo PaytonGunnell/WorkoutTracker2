@@ -24,8 +24,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.paytongunnell.workouttracker2.R
 import com.paytongunnell.workouttracker2.model.Exercise
 import com.paytongunnell.workouttracker2.ui.theme.lightBlueButton
 import kotlinx.coroutines.launch
@@ -42,10 +44,6 @@ fun ExerciseList(
 ) {
     val coroutineScope = rememberCoroutineScope()
 
-    var count = 0
-//    val grouping = exercises.groupBy { // Pair(letter, Pair(count, list))
-//        it.name.first().uppercase()
-//    }.toList()
     val grouping = exercises.groupBy { exercise ->
         if (exercise.name.first().isDigit()) {
             exercise.name.dropWhile { !it.isLetter() }.first().uppercase()
@@ -53,6 +51,7 @@ fun ExerciseList(
             exercise.name.first().uppercase()
         }
     }.toList().sortedBy { it.first }
+
     var listState = rememberLazyListState()
 
     Row(modifier = modifier.fillMaxWidth()) {
@@ -126,7 +125,7 @@ fun ExerciseList(
                                             style = MaterialTheme.typography.labelLarge.copy(color = MaterialTheme.colorScheme.secondary),
                                         )
                                         Text(
-                                            text = if (item.prevLbs != null && item.prevReps != null) { "${item.prevLbs} lb (x${item.prevReps})" } else { "N/A" },
+                                            text = if (item.prevLbs != null && item.prevReps != null) { "${item.prevLbs} lb (x${item.prevReps})" } else { stringResource(R.string.n_a) },
                                             style = MaterialTheme.typography.labelLarge.copy(color = MaterialTheme.colorScheme.secondary),
                                         )
                                     }

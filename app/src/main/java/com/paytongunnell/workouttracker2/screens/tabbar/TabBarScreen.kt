@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.BottomSheetScaffold
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SheetValue
@@ -38,12 +39,15 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.paytongunnell.workouttracker2.screens.destinations.AuthScreenDestination
+import com.paytongunnell.workouttracker2.screens.destinations.AuthTestScreenDestination
 import com.ramcosta.composedestinations.annotation.Destination
 import com.paytongunnell.workouttracker2.screens.tabbar.exercises.ExercisesScreen
 import com.paytongunnell.workouttracker2.screens.tabbar.exercises.composables.ExerciseInfoPopup
 import com.paytongunnell.workouttracker2.screens.tabbar.exercises.composables.IconTab
 import com.paytongunnell.workouttracker2.screens.tabbar.exercises.composables.NewExercisePopup
 import com.paytongunnell.workouttracker2.screens.tabbar.history.HistoryScreen
+import com.paytongunnell.workouttracker2.screens.tabbar.history.composables.CalendarPopup
 import com.paytongunnell.workouttracker2.screens.tabbar.history.composables.WorkoutInfoPopup
 import com.paytongunnell.workouttracker2.screens.tabbar.startworkout.StartWorkoutScreen
 import com.paytongunnell.workouttracker2.screens.tabbar.workouttracker.WorkoutTrackerPopup
@@ -86,6 +90,7 @@ fun TabBarScreen(
 
     // History popup toggles
     var showWorkoutInfo by remember { mutableStateOf(false) }
+    var showCalendar by remember { mutableStateOf(false) }
 
     // dim effect
     var dimBackground by mutableStateOf(showRestTimer || showWorkoutInfo || showFinishWorkout || showAddExercises || showExerciseInfo || showNewExercise)
@@ -146,16 +151,12 @@ fun TabBarScreen(
                             ) {
                                 when (selectedIndex) {
                                     0 -> {
-                                        LazyColumn {
-                                            items(state.data) {
-                                                val img = BitmapFactory.decodeFile(
-                                                    viewModel.gifs[it.id]?.absolutePath
-                                                        ?: null
-                                                ).asImageBitmap()
-                                                Text(it.name, color = Color.White)
-                                                Image(bitmap = img, contentDescription = null)
-//                                  GlideImage(model = tabBarViewModel.gifs[it.id], contentDescription = null, modifier = Modifier.fillMaxSize())
-                                            }
+                                        // Log Out
+                                        Button(onClick = {
+                                            viewModel.signOut()
+                                            navigator.navigate(AuthScreenDestination)
+                                        }) {
+                                            Text(if (viewModel.isUserSignedIn()) "Sign Out" else "Sign Up/In")
                                         }
                                     }
 
@@ -208,9 +209,8 @@ fun TabBarScreen(
                             .height(IntrinsicSize.Min)
                             .background(MaterialTheme.colorScheme.surface)
                             .padding(top = 3.dp)
-//                            .alpha(if (isPartiallyExpanded == SheetValue.PartiallyExpanded && sheetState.bottomSheetState.hasExpandedState) 1f else 0f)
                     ) {
-                        for (i in 1 until 4) {
+                        for (i in 0 until 4) {
                             IconTab(
                                 index = i,
                                 selectedTab = selectedIndex,
@@ -244,6 +244,9 @@ fun TabBarScreen(
                         )
                     }
                 }
+                if (showCalendar) {
+                    CalendarPopup(onDismiss = { showCalendar = false })
+                }
                 if (showNewExercise) {
                     NewExercisePopup(
                         onCreateNewExercise = { viewModel.createNewExercise(it) },
@@ -276,7 +279,6 @@ fun TabBarScreen(
                                 showFinishWorkout = false
                                 sheetState.bottomSheetState.hide()
                             }
-                            workoutTrackerViewModel.reset()
                         },
                         onClickCancel = {
                             showFinishWorkout = false

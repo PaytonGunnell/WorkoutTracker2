@@ -38,6 +38,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -216,7 +217,7 @@ fun WorkoutTrackerPopup(
 
                         if (workoutTrackerViewModel.workoutTracker.workout.note == "" || workoutTrackerViewModel.workoutTracker.workout.note == null) {
                             Text(
-                                text = "Notes",
+                                text = stringResource(R.string.notes),
                                 style = MaterialTheme.typography.titleSmall.copy(color = MaterialTheme.colorScheme.secondary)
                             )
                         }
@@ -260,7 +261,7 @@ fun WorkoutTrackerPopup(
                             .clickable { onClickAddExercise() }
                     ) {
                         Text(
-                            "Add Exercises",
+                            stringResource(R.string.add_exercises),
                             modifier = Modifier.align(Alignment.Center),
                             style = MaterialTheme.typography.titleSmall.copy(color = MaterialTheme.colorScheme.lightBlueButton)
                         )
@@ -280,7 +281,7 @@ fun WorkoutTrackerPopup(
                             .clickable { onClickCancelWorkout() }
                     ) {
                         Text(
-                            "Cancel Workout",
+                            stringResource(R.string.cancel_workout),
                             modifier = Modifier.align(Alignment.Center),
                             style = MaterialTheme.typography.titleSmall.copy(color = MaterialTheme.colorScheme.stopRed)
                         )

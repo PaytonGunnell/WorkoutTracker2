@@ -21,11 +21,11 @@ interface WorkoutDao {
     @Query("DELETE FROM workout_table")
     suspend fun deleteAllWorkouts()
 
-    @Query("SELECT * FROM workout_table ORDER BY startTime")
-    suspend fun getAllWorkouts(): List<Workout>
+    @Query("SELECT * FROM workout_table WHERE userId = :uId ORDER BY startTime")
+    suspend fun getAllWorkouts(uId: String?): List<Workout>
 
-    @Query("SELECT * FROM workout_table WHERE id IN (:workoutIds)")
-    suspend fun getWorkoutsWithIds(workoutIds: List<String>): List<Workout>
+    @Query("SELECT * FROM workout_table WHERE userId = :uId AND id IN (:workoutIds)")
+    suspend fun getWorkoutsWithIds(uId: String?, workoutIds: List<String>): List<Workout>
 
     @Query("DELETE FROM workout_table WHERE id = :workoutId")
     suspend fun deleteWorkoutWithId(workoutId: String)

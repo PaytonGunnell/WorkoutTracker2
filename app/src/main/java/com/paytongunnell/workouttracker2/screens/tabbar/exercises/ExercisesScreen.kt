@@ -26,8 +26,10 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.paytongunnell.workouttracker2.R
 import com.paytongunnell.workouttracker2.model.BodyPart
 import com.paytongunnell.workouttracker2.model.Exercise
 import com.paytongunnell.workouttracker2.model.ExerciseEquipment
@@ -69,19 +71,19 @@ fun ExercisesScreen(
             ) {
 
                 Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-                    Text("New", style = MaterialTheme.typography.blueTextButton, modifier = Modifier.clickable { onClickNewExercise() })
+                    Text(stringResource(R.string._new), style = MaterialTheme.typography.blueTextButton, modifier = Modifier.clickable { onClickNewExercise() })
 //                    Text(
 //                        "Exercises",
 //                        style = MaterialTheme.typography.titleSmall,
 //                        modifier = Modifier
 //                            .align(Alignment.CenterVertically)
 //                    )
-                    Text("New", modifier = Modifier.alpha(0f))
+                    Text(stringResource(R.string._new), modifier = Modifier.alpha(0f))
                 }
 
 
                 Text(
-                    "Exercises",
+                    stringResource(R.string.exercises),
                     style = MaterialTheme.typography.titleLarge,
                     modifier = Modifier.padding(vertical = 10.dp)
                 )
@@ -120,13 +122,15 @@ fun ExercisesScreen(
                                         .padding(5.dp)
                                         .weight(1f)
                                     ,
-                                    hint = "Search"
+                                    hint = stringResource(R.string.search)
                                 )
                             }
                         }
                     }
 
-                    Row(horizontalArrangement = Arrangement.SpaceEvenly, modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp)) {
+                    Row(horizontalArrangement = Arrangement.SpaceEvenly, modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 3.dp)) {
                         FilterDropDownButton(
                             enumValues = enumValues<BodyPart>(),
                             onClickDropDownMenu = { showBodyPartFilter = true },

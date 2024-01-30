@@ -56,6 +56,17 @@ class TabBarViewModel @Inject constructor(
         }
     }
 
+    // Auth
+    fun signOut() {
+        viewModelScope.launch {
+            repository.signOut()
+        }
+    }
+
+    fun isUserSignedIn(): Boolean {
+        return repository.getFirebaseUser() != null
+    }
+
     fun refreshWorkoutHistory() {
         val a = _workouts.filter { it.exercises.any { it.exerciseId == "" } }
         a.forEach { workout ->

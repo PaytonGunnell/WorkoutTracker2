@@ -15,13 +15,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.paytongunnell.workouttracker2.R
 import com.paytongunnell.workouttracker2.model.Exercise
 import com.paytongunnell.workouttracker2.ui.theme.lightBlueButton
 import java.io.File
 
 @SuppressLint("UnrememberedMutableState")
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StartWorkoutScreen(
     exercises: List<Exercise>,
@@ -38,7 +39,7 @@ fun StartWorkoutScreen(
     ) {
         item {
             Text(
-                "Start Workout",
+                stringResource(R.string.start_workout),
                 style = MaterialTheme.typography.titleLarge,
                 modifier = Modifier
                     .padding(vertical = 20.dp)
@@ -47,7 +48,7 @@ fun StartWorkoutScreen(
         }
         item {
             Column {
-                Text("Quick Start", style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(vertical = 5.dp))
+                Text(stringResource(R.string.quick_start), style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(vertical = 5.dp))
                 Box(
                     modifier = Modifier
                         .padding(vertical = 10.dp)
@@ -60,7 +61,7 @@ fun StartWorkoutScreen(
                         .clickable { onStartWorkout() }
                 ) {
                     Text(
-                        "Start an Empty Workout",
+                        stringResource(R.string.start_an_empty_workout),
                         style = MaterialTheme.typography.titleSmall,
                         modifier = Modifier
                             .align(Alignment.Center)

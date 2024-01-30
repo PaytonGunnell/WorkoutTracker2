@@ -86,7 +86,7 @@ class WorkoutTrackerRepository constructor(
         }
     }
 
-    // BroadcastReceiverSync
+    // BroadcastReceiver Sync
     suspend fun syncFirebaseAfterBackOnline() {
         withContext(dispatcher) {
             try {
@@ -98,7 +98,7 @@ class WorkoutTrackerRepository constructor(
 
                     exerciseIdsToBeUploaded?.let { ids ->
                         Log.d("repository", "exerciseids not null")
-                        val exercises = database.exerciseDao.getExercisesWithIds(ids)
+                        val exercises = database.exerciseDao.getExercisesWithIds(uId, ids)
                         workoutTrackerServerService.addExercises(uId, exercises)
 
                         // set list of exercise id's to null
@@ -109,7 +109,7 @@ class WorkoutTrackerRepository constructor(
                     val workoutIdsToBeUploaded = pendingUpload.getStringSet("$uId:${UploadType.EXERCISE.stringValue}:${UploadTo.FIREBASE.stringValue}", null)?.toList()
 
                     workoutIdsToBeUploaded?.let { ids ->
-                        val workouts = database.workoutDao.getWorkoutsWithIds(ids)
+                        val workouts = database.workoutDao.getWorkoutsWithIds(uId, ids)
                         workoutTrackerServerService.addWorkouts(uId, workouts)
 
                         // set list of workout id's to null
@@ -143,7 +143,6 @@ class WorkoutTrackerRepository constructor(
     }
 
     // Firebase
-
     fun getFirebaseUser(): FirebaseUser? {
         return authClient.getCurrentUser()
     }
@@ -184,7 +183,7 @@ class WorkoutTrackerRepository constructor(
                         val firebaseExercises = workoutTrackerServerService.getExercises(uId)
 
                         if (transferData) {
-                            val localDatabaseExercises = database.exerciseDao.getAllCustomMadeExercises()
+                            val localDatabaseExercises = database.exerciseDao.getAllCustomMadeExercises(null)
 
                             if (localDatabaseExercises.isNotEmpty()) {
                                 try {
@@ -212,7 +211,7 @@ class WorkoutTrackerRepository constructor(
                         val firebaseWorkouts = workoutTrackerServerService.getWorkouts(uId)
 
                         if (transferData) {
-                            val localDatabaseWorkouts = database.workoutDao.getAllWorkouts()
+                            val localDatabaseWorkouts = database.workoutDao.getAllWorkouts(null)
                             if (localDatabaseWorkouts.isNotEmpty()) {
                                 try {
                                     workoutTrackerServerService.addWorkouts(uId, localDatabaseWorkouts)
@@ -328,13 +327,15 @@ class WorkoutTrackerRepository constructor(
     suspend fun downloadExercisesFromApi() {
         withContext(dispatcher) {
             try {
+                val user = authClient.getCurrentUser()
+
                 val count = database.exerciseDao.getCount()
 
                 if (count <= 0) {
                     val fetchedExercises = networkService.getExercises()
                     database.exerciseDao.upsertExercises(fetchedExercises)
 
-                    val exercises = database.exerciseDao.getAllExercises()
+                    val exercises = database.exerciseDao.getAllExercises(user?.uid ?: "none")
                     saveExerciseGifsToFile(application, exercises)
                 }
             } catch (e: Exception) {
@@ -347,7 +348,9 @@ class WorkoutTrackerRepository constructor(
     fun getAllCustomMadeExercises(): Flow<Response<List<Exercise>>> = flow {
         emit(Response.Loading())
         try {
-            var exercises = database.exerciseDao.getAllCustomMadeExercises()
+            val user = authClient.getCurrentUser()
+
+            var exercises = database.exerciseDao.getAllCustomMadeExercises(user?.uid)
             emit(Response.Success(exercises))
         } catch (e: Exception) {
             emit(Response.Error(e.localizedMessage))
@@ -357,14 +360,16 @@ class WorkoutTrackerRepository constructor(
         emit(Response.Loading())
 
         try {
-            var exercises = database.exerciseDao.getAllExercises()
+            val user = authClient.getCurrentUser()
+
+            var exercises = database.exerciseDao.getAllExercises(user?.uid ?: "none")
             Log.d("getAll", "size: ${exercises.count()}")
 
             if (exercises.isEmpty()) {
                 Log.d("getAll", "isEmpty")
                 val fetchedExercises = networkService.getExercises()
                 database.exerciseDao.upsertExercises(fetchedExercises)
-                exercises = database.exerciseDao.getAllExercises()
+                exercises = database.exerciseDao.getAllExercises(user?.uid ?: "none")
 
                 saveExerciseGifsToFile(application, exercises)
             }
@@ -400,12 +405,16 @@ class WorkoutTrackerRepository constructor(
 //    }
     suspend fun getAllLocalWorkouts(): List<Workout> {
         return withContext(dispatcher) {
-            database.workoutDao.getAllWorkouts()
+            val user = authClient.getCurrentUser()
+
+            database.workoutDao.getAllWorkouts(user?.uid)
         }
     }
     suspend fun getExercise(withId: String): Exercise {
         return withContext(dispatcher) {
-            database.exerciseDao.getExercise(withId)
+            val user = authClient.getCurrentUser()
+
+            database.exerciseDao.getExercise(user?.uid, withId)
         }
     }
     suspend fun deleteAllWorkouts() {

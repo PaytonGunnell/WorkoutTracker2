@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
@@ -33,7 +34,13 @@ fun IconTab(
         R.drawable.dumbbell_icon,
         R.drawable.crown_icon
     )
-    val tabText = arrayOf("Profile","History","Start Workout","Exercises","Upgrade")
+    val tabText = arrayOf(
+        stringResource(R.string.profile),
+        stringResource(R.string.history),
+        stringResource(R.string.start_workout),
+        stringResource(R.string.exercises),
+        stringResource(R.string.upgrade)
+    )
 
     Box(
         modifier = modifier
@@ -54,7 +61,6 @@ fun IconTab(
                     .padding(0.dp)
                     .fillMaxWidth()
                     .weight(2f)
-//                    .aspectRatio(1f)
             )
             Text(
                 text = tabText[index],

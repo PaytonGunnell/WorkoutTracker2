@@ -23,8 +23,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.paytongunnell.workouttracker2.R
 import com.paytongunnell.workouttracker2.ui.theme.lightBlueButton
 import com.paytongunnell.workouttracker2.ui.theme.lighterGray
 import com.paytongunnell.workouttracker2.ui.theme.stopRed
@@ -87,7 +89,7 @@ fun RestTimerPopup(
                     Icon(Icons.Default.Clear, contentDescription = null)
                 }
                 Text(
-                    "Rest Timer",
+                    stringResource(R.string.rest_timer),
                     style = MaterialTheme.typography.titleSmall
                 )
                 Box(
@@ -106,7 +108,7 @@ fun RestTimerPopup(
             }
 
             Text(
-                "Choose a duration below.",
+                stringResource(R.string.choose_a_duration_below),
                 style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.lighterGray)
             )
 
@@ -159,7 +161,7 @@ fun RestTimerPopup(
                         }
                 ) {
                     Text(
-                        "Start Timer",
+                        stringResource(R.string.start_timer),
                         style = MaterialTheme.typography.titleSmall.copy(color = MaterialTheme.colorScheme.lightBlueButton),
                         modifier = Modifier.align(Alignment.Center)
                     )
@@ -180,7 +182,7 @@ fun RestTimerPopup(
                             }
                     ) {
                         Text(
-                            "Pause",
+                            stringResource(R.string.pause),
                             style = MaterialTheme.typography.titleSmall.copy(color = MaterialTheme.colorScheme.lightBlueButton),
                             modifier = Modifier.align(Alignment.Center)
                         )
@@ -203,7 +205,7 @@ fun RestTimerPopup(
                             }
                     ) {
                         Text(
-                            "Reset",
+                            stringResource(R.string.reset),
                             style = MaterialTheme.typography.titleSmall.copy(color = MaterialTheme.colorScheme.stopRed),
                             modifier = Modifier.align(Alignment.Center)
                         )

@@ -29,8 +29,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.paytongunnell.workouttracker2.R
 import com.paytongunnell.workouttracker2.model.ExerciseBlock
 import com.paytongunnell.workouttracker2.model.SetType
 import com.paytongunnell.workouttracker2.model.WorkoutSet
@@ -92,28 +94,28 @@ fun ExerciseBlockView(
             ) {
                 Box(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Set",
+                        text = stringResource(R.string.set),
                         style = MaterialTheme.typography.titleSmall,
                         modifier = Modifier.align(Alignment.CenterStart)
                     )
                 }
                 Box(modifier = Modifier.weight(3f)) {
                     Text(
-                        text = "Previous",
+                        text = stringResource(R.string.previous),
                         style = MaterialTheme.typography.titleSmall,
                         modifier = Modifier.align(Alignment.Center)
                     )
                 }
                 Box(modifier = Modifier.weight(2f)) {
                     Text(
-                        text = "lbs",
+                        text = stringResource(R.string.lbs),
                         style = MaterialTheme.typography.titleSmall,
                         modifier = Modifier.align(Alignment.Center)
                     )
                 }
                 Box(modifier = Modifier.weight(2f)) {
                     Text(
-                        text = "reps",
+                        text = stringResource(R.string.reps),
                         style = MaterialTheme.typography.titleSmall,
                         modifier = Modifier.align(Alignment.Center)
                     )
@@ -192,8 +194,6 @@ fun ExerciseBlockView(
                                         value = setWeight, onValueChange = {
                                             setWeight = it
                                             onChangeSetWeight(set.id - 1, it.toDouble())
-//                                        exerciseBlock.sets[set.id - 1] =  exerciseBlock.sets[set.id - 1].copy(weight = 1.0)
-                                            Log.d("textfield", "it: ${set.weight}")
                                         },
                                         textStyle = MaterialTheme.typography.titleSmall.copy(
                                             MaterialTheme.colorScheme.onBackground
@@ -222,8 +222,6 @@ fun ExerciseBlockView(
                                         value = repCount, onValueChange = {
                                             repCount = it
                                             onChangeSetRepCount(set.id - 1, it.toInt())
-//                                        exerciseBlock.sets[set.id - 1] =  exerciseBlock.sets[set.id - 1].copy(weight = 1.0)
-                                            Log.d("textfield", "it: ${set.weight}")
                                         },
                                         textStyle = MaterialTheme.typography.titleSmall.copy(
                                             MaterialTheme.colorScheme.onBackground
@@ -292,7 +290,7 @@ fun ExerciseBlockView(
                 }
             ) {
                 Text(
-                    "+ Add Set",
+                    stringResource(R.string.add_set),
                     style = MaterialTheme.typography.labelLarge,
                     modifier = Modifier.align(Alignment.Center)
                 )

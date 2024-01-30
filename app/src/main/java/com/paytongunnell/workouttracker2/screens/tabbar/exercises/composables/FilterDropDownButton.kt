@@ -23,7 +23,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.paytongunnell.workouttracker2.R
 import com.paytongunnell.workouttracker2.model.BodyPart
 import com.paytongunnell.workouttracker2.model.ExerciseEquipment
 import com.paytongunnell.workouttracker2.model.ExerciseFilter
@@ -88,7 +90,7 @@ fun <T> FilterDropDownButton(
                 .padding(3.dp)
             ) {
                 Text(
-                    exerciseFilter.bodyPart?.stringValue ?: "Any Category",
+                    exerciseFilter.bodyPart?.stringValue ?: stringResource(R.string.any_category),
                     style = MaterialTheme.typography.labelLarge,
                     modifier = Modifier.align(Alignment.Center)
                 )
@@ -98,14 +100,14 @@ fun <T> FilterDropDownButton(
                 .fillMaxWidth()
                 .padding(vertical = 5.dp)
                 .background(
-                        color = if (exerciseFilter.equipment != null) MaterialTheme.colorScheme.lightBlueButton else MaterialTheme.colorScheme.surfaceVariant,
-                        shape = MaterialTheme.shapes.small
-                    )
+                    color = if (exerciseFilter.equipment != null) MaterialTheme.colorScheme.lightBlueButton else MaterialTheme.colorScheme.surfaceVariant,
+                    shape = MaterialTheme.shapes.small
+                )
                 .padding(3.dp)
                 .clickable { onClickDropDownMenu() }
             ) {
                 Text(
-                    exerciseFilter.equipment?.stringValue ?: "Any Equipment",
+                    exerciseFilter.equipment?.stringValue ?: stringResource(R.string.any_equipment),
                     style = MaterialTheme.typography.labelLarge,
                     modifier = Modifier.align(Alignment.Center)
                 )

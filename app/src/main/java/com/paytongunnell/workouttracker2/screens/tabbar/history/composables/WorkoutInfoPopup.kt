@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.paytongunnell.workouttracker2.R
 import com.paytongunnell.workouttracker2.model.Workout
@@ -55,7 +56,9 @@ fun WorkoutInfoPopup(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp)) {
+            Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 10.dp)) {
                 Box(
                     modifier = Modifier
                         .background(
@@ -73,7 +76,7 @@ fun WorkoutInfoPopup(
                     style = MaterialTheme.typography.titleSmall
                 )
                 Text(
-                    "Edit",
+                    stringResource(R.string.edit),
                     style = MaterialTheme.typography.blueTextButton,
                     modifier = Modifier.alpha(0f)
                 )
@@ -83,7 +86,9 @@ fun WorkoutInfoPopup(
                 style = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.secondary),
                 modifier = Modifier.padding(bottom = 1.dp)
             )
-            Row(modifier = Modifier.fillMaxWidth().padding(bottom = 5.dp)) {
+            Row(modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 5.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
                     Icon(painterResource(R.drawable.clock_icon), contentDescription = null, tint = MaterialTheme.colorScheme.secondary)
                     Spacer(modifier = Modifier.width(10.dp))
@@ -104,7 +109,7 @@ fun WorkoutInfoPopup(
                     Icon(painterResource(R.drawable.trophy_icon), contentDescription = null, tint = MaterialTheme.colorScheme.secondary)
                     Spacer(modifier = Modifier.width(10.dp))
                     Text(
-                        "N/A",
+                        stringResource(R.string.n_a),
                         style = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.secondary)
                     )
                 }
@@ -119,7 +124,7 @@ fun WorkoutInfoPopup(
                                 style = MaterialTheme.typography.titleSmall
                             )
                             Text(
-                                "1RM",
+                                stringResource(R.string._1rm),
                                 style = MaterialTheme.typography.titleSmall
                             )
                         }
@@ -137,7 +142,7 @@ fun WorkoutInfoPopup(
                                 }
                                 Box(modifier = Modifier.weight(5f)) {
                                     Text(
-                                        if (it?.weight != null && it?.reps != null) "${it.weight} lb x ${it.reps}" else "N/A",
+                                        if (it?.weight != null && it?.reps != null) "${it.weight} lb x ${it.reps}" else stringResource(R.string.n_a),
                                         style = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.secondary),
                                         modifier = Modifier.align(Alignment.CenterStart)
                                     )
@@ -147,7 +152,7 @@ fun WorkoutInfoPopup(
                                         if (it?.weight != null && it?.reps != null) calculateOneRepMax(
                                             it.weight,
                                             it.reps
-                                        ).toString() else "N/A",
+                                        ).toString() else stringResource(R.string.n_a),
                                         style = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.secondary),
                                         modifier = Modifier.align(Alignment.CenterEnd)
                                     )
