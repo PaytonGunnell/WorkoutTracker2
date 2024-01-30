@@ -43,6 +43,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.paytongunnell.workouttracker2.R
 import com.paytongunnell.workouttracker2.model.Exercise
+import com.paytongunnell.workouttracker2.ui.theme.lightBlueButton
 import com.paytongunnell.workouttracker2.utils.formatElapsedTime
 import com.paytongunnell.workouttracker2.utils.formatRestTime
 
@@ -53,6 +54,7 @@ fun WorkoutTrackerPopup(
     isPartiallyExpanded: Boolean,
     workoutTrackerViewModel: WorkoutTrackerViewModel = hiltViewModel(),
     onClickRestTimer: () -> Unit,
+    ,
     modifier: Modifier = Modifier
 ) {
 
