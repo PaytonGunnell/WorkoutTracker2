@@ -112,7 +112,7 @@ fun AddExercisesPopup(
                 )
                 Text(
                     text = if (selectedExercises.count() > 1)
-                        "${stringResource(R.string._new)} (${selectedExercises.count()})" else
+                        "${stringResource(R.string.add)} (${selectedExercises.count()})" else
                         stringResource(R.string.add),
                     style = MaterialTheme.typography.titleSmall.copy(
                         color = if (selectedExercises.isNotEmpty())

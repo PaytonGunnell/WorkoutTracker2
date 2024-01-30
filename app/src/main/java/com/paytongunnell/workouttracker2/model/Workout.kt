@@ -20,7 +20,7 @@ import java.util.UUID
 data class Workout(
     @PrimaryKey
     val id: String = UUID.randomUUID().toString(),
-    val userId: String? = null, // Used to separate the data by users, null if no user is logged in.
+    val userId: String = "none", // Used to separate the data by users, null if no user is logged in.
     val name: String = "Workout",
     var note: String = "",
     var startTime: Long = System.currentTimeMillis(),

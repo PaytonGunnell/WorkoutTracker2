@@ -1,8 +1,12 @@
 package com.paytongunnell.workouttracker2.screens.auth
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -10,10 +14,17 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.paytongunnell.workouttracker2.R
+import com.paytongunnell.workouttracker2.screens.auth.composables.AuthButton
 import com.paytongunnell.workouttracker2.screens.authtest.AuthTestViewModel
 import com.paytongunnell.workouttracker2.screens.destinations.TabBarScreenDestination
+import com.paytongunnell.workouttracker2.ui.theme.lighterGray
 import com.paytongunnell.workouttracker2.utils.Response
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -29,7 +40,7 @@ fun AuthScreen(
 
     when (val userState = user) {
         is Response.Loading -> {
-            CircularProgressIndicator()
+            CircularProgressIndicator(color = MaterialTheme.colorScheme.lighterGray)
         }
         is Response.Success -> {
             run {
@@ -37,31 +48,61 @@ fun AuthScreen(
             }
         }
         else -> {
-            Column {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.SpaceEvenly,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp)
+            ) {
+
                 var email by remember { mutableStateOf("") }
-                TextField(value = email, onValueChange = {
-                    email = it
-                })
-
                 var password by remember { mutableStateOf("") }
-                TextField(value = password, onValueChange = {
-                    password = it
-                })
 
-                Button(onClick = { viewModel.createAccount(email, password) }) {
-                    Text("Sign Up")
+                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+                    TextField(
+                        value = email,
+                        onValueChange = {
+                            email = it
+                        },
+                        label = { Text(stringResource(R.string.email)) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 2.dp)
+                    )
+
+                    TextField(
+                        value = password,
+                        onValueChange = {
+                            password = it
+                        },
+                        label = { Text(stringResource(R.string.password)) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 2.dp)
+                    )
                 }
 
-                Button(onClick = { viewModel.signIn(email, password) }) {
-                    Text("Log In")
-                }
+                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+                    AuthButton(
+                        onClick = { viewModel.createAccount(email, password) },
+                        text = stringResource(R.string.sign_up),
+                    )
 
-                Button(onClick = { viewModel.continueWithoutAccount() }) {
-                    Text("Continue without an account")
-                }
+                    AuthButton(
+                        onClick = { viewModel.signIn(email, password) },
+                        text = stringResource(R.string.sign_in),
+                    )
 
-                if (userState is Response.Error) {
-                    Text("Error: ${userState.message}")
+                    Button(
+                        onClick = { viewModel.continueWithoutAccount() },
+                    ) {
+                        Text("Continue without an account")
+                    }
+
+                    if (userState is Response.Error) {
+                        Text("Error: ${userState.message}", modifier = Modifier.weight(1f))
+                    }
                 }
             }
         }

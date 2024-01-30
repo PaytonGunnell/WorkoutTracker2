@@ -167,7 +167,7 @@ fun TabBarScreen(
                                                 viewModel.clickWorkoutInfo(workout = it)
                                                 showWorkoutInfo = true
                                             },
-                                            onRefreshHistory = { viewModel.refreshWorkoutHistory()/*tabBarViewModel.deleteAllHistory()*/ }
+                                            onRefreshHistory = { viewModel.refreshWorkoutHistory() }
                                         )
                                     }
 
@@ -275,9 +275,9 @@ fun TabBarScreen(
                         onClickFinish = {
                             coroutineScope.launch {
                                 workoutTrackerViewModel.finishWorkout()
-                                viewModel.refreshWorkoutHistory()
                                 showFinishWorkout = false
                                 sheetState.bottomSheetState.hide()
+                                viewModel.refreshWorkoutHistory()
                             }
                         },
                         onClickCancel = {

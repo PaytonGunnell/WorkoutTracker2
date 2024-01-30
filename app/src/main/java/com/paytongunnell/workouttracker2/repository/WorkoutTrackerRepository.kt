@@ -325,22 +325,20 @@ class WorkoutTrackerRepository constructor(
 
     // API
     suspend fun downloadExercisesFromApi() {
-        withContext(dispatcher) {
-            try {
-                val user = authClient.getCurrentUser()
+        try {
+            val user = authClient.getCurrentUser()
 
-                val count = database.exerciseDao.getCount()
+            val count = database.exerciseDao.getCount()
 
-                if (count <= 0) {
-                    val fetchedExercises = networkService.getExercises()
-                    database.exerciseDao.upsertExercises(fetchedExercises)
+            if (count <= 0) {
+                val fetchedExercises = networkService.getExercises()
+                database.exerciseDao.upsertExercises(fetchedExercises)
 
-                    val exercises = database.exerciseDao.getAllExercises(user?.uid ?: "none")
-                    saveExerciseGifsToFile(application, exercises)
-                }
-            } catch (e: Exception) {
-                Toast.makeText(application, "${e.message}", Toast.LENGTH_SHORT).show()
+                val exercises = database.exerciseDao.getAllExercises(user?.uid ?: "none")
+                saveExerciseGifsToFile(application, exercises)
             }
+        } catch (e: Exception) {
+            Toast.makeText(application, "${e.message}", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -381,33 +379,11 @@ class WorkoutTrackerRepository constructor(
             emit(Response.Error(e.message))
         }
     }
-
-//    suspend fun getAllLocalExercises(): List<Exercise> {
-//        return withContext(dispatcher) {
-//            try {
-//                var exercises = database.exerciseDao.getAllExercises()
-//
-//                if (exercises.isEmpty()) {
-//                    val fetchedExercises = networkService.getExercises()
-//                    database.exerciseDao.upsertExercises(fetchedExercises)
-//                    exercises = database.exerciseDao.getAllExercises()
-//
-//                    saveExerciseGifsToFile(application, exercises)
-//                }
-//
-//                return@withContext exercises
-//
-//            } catch (e: Exception) {
-//                Log.d("getAll", "Msg: ${e.message}")
-//                return@withContext emptyList()
-//            }
-//        }
-//    }
     suspend fun getAllLocalWorkouts(): List<Workout> {
         return withContext(dispatcher) {
             val user = authClient.getCurrentUser()
 
-            database.workoutDao.getAllWorkouts(user?.uid)
+            database.workoutDao.getAllWorkouts(user?.uid ?: "none")
         }
     }
     suspend fun getExercise(withId: String): Exercise {

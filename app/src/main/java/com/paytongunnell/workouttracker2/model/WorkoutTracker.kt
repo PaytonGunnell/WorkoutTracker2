@@ -9,7 +9,7 @@ import java.util.UUID
 
 data class WorkoutTracker(
     val uId: String? = null,
-    val workout: Workout = Workout(userId = uId),
+    val workout: Workout = Workout(userId = uId ?: "none"),
     val elapsedMillis: Long = 0L,
     val isRestTimerRunning: Boolean = false,
     val automaticTiming: Boolean = true,

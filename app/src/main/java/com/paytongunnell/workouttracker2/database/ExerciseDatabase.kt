@@ -12,7 +12,7 @@ import com.paytongunnell.workouttracker2.utils.ExerciseBlockTypeConverter
 import com.paytongunnell.workouttracker2.utils.HashMapStringSetTypeConverter
 import com.paytongunnell.workouttracker2.utils.SetIdSetHashmapSericalizer
 
-@Database(entities = [Exercise::class, Workout::class], version = 5, exportSchema = false)
+@Database(entities = [Exercise::class, Workout::class], version = 6, exportSchema = false)
 @TypeConverters(StringListTypeConverter::class, HashMapStringSetTypeConverter::class, ExerciseBlockTypeConverter::class)
 abstract class ExerciseDatabase: RoomDatabase() {
 
