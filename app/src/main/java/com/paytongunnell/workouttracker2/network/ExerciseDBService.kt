@@ -14,9 +14,10 @@ import kotlinx.serialization.json.Json
 
 object ExerciseDBService {
 
+    // put own rapidapi api key in place of APIKEY
     private const val BASE_URL = "https://exercisedb.p.rapidapi.com"
     val urlHeaders = mapOf(
-        "X-RapidAPI-Key" to "291db17ca4msh79208699702447ap1e6cc2jsn16ff8e292e69",
+        "X-RapidAPI-Key" to APIKEY,
         "X-RapidAPI-Host" to "exercisedb.p.rapidapi.com"
     )
 
