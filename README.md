@@ -6,3 +6,5 @@
 <img src="https://github.com/PaytonGunnell/WorkoutTracker2/blob/main/photos/StartWorkoutScreen3.png" width = "300">
 <img src="https://github.com/PaytonGunnell/WorkoutTracker2/blob/main/photos/WorkoutHistoryScreen1.png" width = "300">
 <img src="https://github.com/PaytonGunnell/WorkoutTracker2/blob/main/photos/WorkoutHistoryScreen2.png" width = "300">
+<img src="https://github.com/PaytonGunnell/WorkoutTracker2/blob/main/photos/WorkoutTrackerScreen2.png" width = "300">
+<img src="https://github.com/PaytonGunnell/WorkoutTracker2/blob/main/photos/WorkoutTrackerScreen1.png" width = "300">
