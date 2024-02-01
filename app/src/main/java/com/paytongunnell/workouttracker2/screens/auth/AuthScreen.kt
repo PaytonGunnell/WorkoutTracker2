@@ -22,7 +22,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.paytongunnell.workouttracker2.R
 import com.paytongunnell.workouttracker2.screens.auth.composables.AuthButton
-import com.paytongunnell.workouttracker2.screens.authtest.AuthTestViewModel
 import com.paytongunnell.workouttracker2.screens.destinations.TabBarScreenDestination
 import com.paytongunnell.workouttracker2.ui.theme.lighterGray
 import com.paytongunnell.workouttracker2.utils.Response
@@ -33,7 +32,7 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 @Composable
 fun AuthScreen(
     navigator: DestinationsNavigator,
-    viewModel: AuthTestViewModel = hiltViewModel()
+    viewModel: AuthViewModel = hiltViewModel()
 ) {
 
     val user by viewModel.user.collectAsStateWithLifecycle()

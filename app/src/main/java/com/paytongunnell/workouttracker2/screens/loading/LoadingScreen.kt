@@ -10,7 +10,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.paytongunnell.workouttracker2.screens.destinations.AuthTestScreenDestination
+import com.paytongunnell.workouttracker2.screens.destinations.AuthScreenDestination
 import com.paytongunnell.workouttracker2.screens.destinations.TabBarScreenDestination
 import com.paytongunnell.workouttracker2.ui.theme.lighterGray
 import com.ramcosta.composedestinations.annotation.Destination
@@ -31,7 +31,7 @@ fun LoadingScreen(
         if (launch) {
             if (viewModel.user == null && viewModel.hasSeenSignUpScreen()) {
                 viewModel.setHasSeenSignUpScreen()
-                navigator.navigate(AuthTestScreenDestination)
+                navigator.navigate(AuthScreenDestination)
             } else {
                 navigator.navigate(TabBarScreenDestination)
             }
